@@ -1,0 +1,173 @@
+﻿@model IEnumerable<BlogSystem.DTO.ArticleDto>
+
+@{
+    ViewBag.Title = "搜索";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container body-content">
+    <hr />
+    @if (Model.Count<BlogSystem.DTO.ArticleDto>() != 0)
+    {
+        <div class="d-flex mb-2">
+            <div class="row w-100">
+                @foreach (var item in Model)
+                {
+                    <div class="col-lg-6 col-sm-12 mb-4">
+                        <div class="row no-gutters border shadow-sm">
+                            <div class="col-4">
+                               <img src="/Image/@item.imagePath" name="searchImg" class="rounded-circle w-75"/>
+                            </div>
+                            <div class="col-8 position-static">
+                                <div class="card-body">
+                                    <h5 class="card-title">@item.Title</h5>
+                                    <p class="card-text">@item.Content</p>
+                                    <p class="card-text"><small class="text-muted">@item.Email 发布于 @item.CreateTime</small></p>
+                                    <a href="/Article/ArticleDetails/@item.Id" class="stretched-link">继续阅读</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center">什么都没有哦!</div>
+    }
+    <nav>
+        <ul class="pagination justify-content-center">
+            @if (ViewBag.PageCount == 0 || ViewBag.PageCount == 1)
+            {
+            }
+            else if (ViewBag.PageCount <= 7)//分页总数小于7
+            {
+                //当当前页数不是第一个时，显示‘上一页’
+                if (ViewBag.PageIndex != 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="/Home/Search?searchWord=@ViewBag.SearchWord&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
+                    </li>
+                }
+                //实际页数小于可显示页数
+                for (int i = 1; i <= ViewBag.PageCount; i++)
+                {
+                    if (ViewBag.PageIndex == i)
+                    {
+                        <li class="page-item active">
+                            <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="/Home/Search?searchWord=@ViewBag.SearchWord&pageIndex=@i">@i</a>
+                        </li>
+                    }
+                }
+                //当当前页数不是最后一个页数时，显示‘下一页’
+                if (ViewBag.PageIndex != ViewBag.PageCount)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="/Home/Search?searchWord=@ViewBag.SearchWord&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
+                    </li>
+                }
+            }
+            else//分页总数大于7
+            {
+                //当当前页数不是第一个时，显示‘上一页’
+                if (ViewBag.PageIndex != 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="/Home/Search?searchWord=@ViewBag.SearchWord&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
+                    </li>
+                }
+                //实际页数大于可显示页数，这时得分三种情况
+                if (ViewBag.PageIndex <= 7 / 2 + 1)
+                {
+                    //1.在头部前4个不用动
+                    //实际页数小于可显示页数
+                    for (int i = 1; i <= 7; i++)
+                    {
+                        if (ViewBag.PageIndex == i)
+                        {
+                            <li class="page-item active">
+                                <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="/Home/Search?searchWord=@ViewBag.SearchWord&pageIndex=@i">@i</a>
+                            </li>
+                        }
+                    }
+                }
+                else if (ViewBag.PageCount - ViewBag.PageIndex <= 7 / 2)
+                {
+                    //2.在尾部总页数-当前页数<=3不用动
+                    for (int i = ViewBag.PageCount - (7 - 1); i <= ViewBag.PageCount; i++)
+                    {
+                        if (ViewBag.PageIndex == i)
+                        {
+                            <li class="page-item active">
+                                <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="/Home/Search?searchWord=@ViewBag.SearchWord&pageIndex=@i">@i</a>
+                            </li>
+                        }
+                    }
+                }
+                else
+                {
+                    //3.在中间时，当前页数-3到当前页数+3
+                    for (int i = ViewBag.PageIndex - 7 / 2; i <= ViewBag.PageIndex + 7 / 2; i++)
+                    {
+                        if (ViewBag.PageIndex == i)
+                        {
+                            <li class="page-item active">
+                                <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="/Home/Search?searchWord=@ViewBag.SearchWord&pageIndex=@i">@i</a>
+                            </li>
+                        }
+                    }
+                }
+                //当当前页数不是最后一个页数时，显示‘下一页’
+                if (ViewBag.PageIndex != ViewBag.PageCount)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="/Home/Search?searchWord=@ViewBag.SearchWord&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
+                    </li>
+                }
+            }
+        </ul>
+    </nav>
+</div>
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            resize();
+        })
+        window.onresize = function () {
+            resize();
+        }
+        //改变元素大小
+        function resize() {
+            var width = $('img[name="searchImg"]').prop('width');//获取宽度
+            var height = $('img[name="searchImg"]').prop('height');//获取长度
+            if (width != height) {
+                $('img[name="searchImg"]').prop('height',width);
+            }            
+        };
+    </script>
+}

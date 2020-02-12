@@ -1,0 +1,57 @@
+﻿@model BlogSystem.MVCSite.Models.UserViewModels.LoginViewModel
+
+@{
+    Layout = null;
+    string returnUrl = ViewBag.returnUrl;
+}
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登陆</title>
+    <link rel="icon" href="~/blog.ico" mce_href="~/blog.ico" type="image/x-icon">
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+    <link href="~/Content/signin.css" rel="stylesheet" />
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body class="text-center">
+    <form class="form-signin" method="post">
+        <img class="mb-4" src="~/blog.png" alt="" width="72" height="72" />
+        <h1 class="mb-3 h3 font-weight-normal">请登录</h1>
+        @Html.AntiForgeryToken()
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "sr-only" })
+            @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control ml-0", placeholder = "账号" } })
+            @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.LoginPwd, htmlAttributes: new { @class = "sr-only" })
+            @Html.EditorFor(model => model.LoginPwd, new { htmlAttributes = new { @class = "form-control", placeholder = "密码" } })
+            @Html.ValidationMessageFor(model => model.LoginPwd, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group">
+            <div class="custom-control custom-checkbox">
+                @Html.EditorFor(model => model.RemenberMe, new { htmlAttributes = new { @class = "custom-control-input" } })
+                @Html.LabelFor(model => model.RemenberMe, htmlAttributes: new { @class = "custom-control-label" })
+                @Html.ValidationMessageFor(model => model.RemenberMe, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <input type="submit" value="登陆" class="btn btn-lg btn-info btn-block" />
+            @Html.ActionLink("返回首页", "Index", new { }, new { @class = "btn btn-lg btn-outline-secondary btn-block" })
+        </div>
+        <span>没有账户，@Html.ActionLink("立即注册", "Register", new { }, new { @class = "text-decoration-none" })</span> or 
+        <span>@Html.ActionLink("忘记密码", "ForgetPassword", new { }, new { @class = "text-decoration-none" })</span>
+    </div>
+    </form>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/bootstrap")
+</body>
+</html>

@@ -1,0 +1,66 @@
+﻿@model BlogSystem.MVCSite.Models.ArticleViewModels.EditArticleViewModel
+@using BlogSystem.DTO
+@{
+    ViewBag.Title = "编辑文章";
+}
+
+<div class="container body-content">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-group">
+                @Html.EditorFor(model => model.Title, new { htmlAttributes = new { placeholder = "请在这里输入文章标题", @class = "form-control text-center" } })
+                @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+            </div>
+
+            <textarea id="Content" name="Content"></textarea>
+
+            <div class="form-group">
+                <div class="col-md-10 pl-0 mt-3">
+                    @if (ViewBag.Categories.Count == 0)
+                    {
+                        <span class="text-black-50"><small>暂无分类，请在'文章'->'添加文章类型'中添加。</small></span>
+                    }
+                    else
+                    {
+                        foreach (BlogCategoryDto categoryItem in ViewBag.Categories)
+                        {
+                            <div class="custom-control custom-checkbox col-md-2 col-sm-4 d-inline">
+                                <input class="custom-control-input" type="checkbox" name="categoryIds" @(Model.CategoryIds.Contains(categoryItem.Id) ? "checked" : "") value="@categoryItem.Id" id="@categoryItem.Id" />
+                                <label class="custom-control-label" for="@categoryItem.Id">@categoryItem.BlogCategoryName</label>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10 pl-0">
+                    <input type="submit" value="保存" class="btn btn-info" />
+                    @Html.ActionLink("返回文章列表", "ArticleList", "Article", new {  }, new { @class = "btn btn-outline-secondary" })
+                </div>
+            </div>
+        </div>
+    }
+</div>
+@section headers{
+    <link href="~/Scripts/summernote-bs4.css" rel="stylesheet" />
+    <script src="~/Scripts/summernote-bs4.js"></script>
+    <script src="~/Scripts/summernote-zh-CN.js"></script>
+}
+@section Scripts {
+    <script>
+        $('#Content').summernote({
+            placeholder: '开始编写文章',
+            tabsize: 2,
+            lang: 'zh-CN'
+        });
+        $('#Content').summernote('code', '@Html.Raw( Model.Content)');
+    </script>
+}

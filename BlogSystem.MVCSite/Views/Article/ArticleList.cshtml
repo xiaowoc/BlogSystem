@@ -1,0 +1,253 @@
+﻿@model IEnumerable<BlogSystem.DTO.ArticleDto>
+
+@{
+    ViewBag.Title = "文章列表";
+}
+<div class="container body-content">
+    <hr />
+    <p>
+        @if (ViewBag.IsCurrentUser)
+        {
+            @Html.ActionLink("创建新文章", "CreateArticle", "Article", new { }, new { @class = "btn btn-outline-secondary" })
+        }
+    </p>
+    <table class="table table-hover">
+        <thead class="thead-light">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Title)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CreateTime)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Email)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.GoodCount)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.BadCount)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count<BlogSystem.DTO.ArticleDto>() != 0)
+            {
+                foreach (var item in Model)
+                {
+                    <tr id="@item.Id">
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Title)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.CreateTime)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Email)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.GoodCount)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.BadCount)
+                        </td>
+                        <td class="text-right">
+                            @if (ViewBag.IsCurrentUser)
+                            {
+                                <div class="d-none" id="confirmDeleteSpan_@item.Id">
+                                    <span>确认是否删除？</span>
+                                    <button class="btn btn-danger btn-sm" type="submit" onclick="DeleteArticle('@item.Title','@item.Id')">是</button>
+                                    <a href="#" class="btn btn-secondary btn-sm" onclick="confirmDelete('@item.Id',false)">否</a>
+                                </div>
+                                <div class="d-inline" id="deleteSpan_@item.Id">
+                                    @Html.ActionLink("编辑", "EditArticle", new { id = item.Id }, new { @class = "btn btn-outline-warning btn-sm" })
+                                    <a href="#" class="btn btn-outline-danger btn-sm" onclick="confirmDelete('@item.Id',true)">删除</a>
+                                </div>
+                            }
+                            @Html.ActionLink("详情", "ArticleDetails", new { id = item.Id }, new { @class = "btn btn-outline-info btn-sm" })
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan="6" class="text-center">什么都没有哦</td></tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6">
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            @if (ViewBag.PageCount == 0 || ViewBag.PageCount == 1)
+                            {
+                            }
+                            else if (ViewBag.PageCount <= 7)//分页总数小于7
+                            {
+                                //当当前页数不是第一个时，显示‘上一页’
+                                if (ViewBag.PageIndex != 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
+                                    </li>
+                                }
+                                //实际页数小于可显示页数
+                                for (int i = 1; i <= ViewBag.PageCount; i++)
+                                {
+                                    if (ViewBag.PageIndex == i)
+                                    {
+                                        <li class="page-item active">
+                                            <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
+                                        </li>
+                                    }
+                                }
+                                //当当前页数不是最后一个页数时，显示‘下一页’
+                                if (ViewBag.PageIndex != ViewBag.PageCount)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
+                                    </li>
+                                }
+                            }
+                            else//分页总数大于7
+                            {
+                                //当当前页数不是第一个时，显示‘上一页’
+                                if (ViewBag.PageIndex != 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
+                                    </li>
+                                }
+                                //实际页数大于可显示页数，这时得分三种情况
+                                if (ViewBag.PageIndex <= 7 / 2 + 1)
+                                {
+                                    //1.在头部前4个不用动
+                                    //实际页数小于可显示页数
+                                    for (int i = 1; i <= 7; i++)
+                                    {
+                                        if (ViewBag.PageIndex == i)
+                                        {
+                                            <li class="page-item active">
+                                                <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
+                                            </li>
+                                        }
+                                    }
+                                }
+                                else if (ViewBag.PageCount - ViewBag.PageIndex <= 7 / 2)
+                                {
+                                    //2.在尾部总页数-当前页数<=3不用动
+                                    for (int i = ViewBag.PageCount - (7 - 1); i <= ViewBag.PageCount; i++)
+                                    {
+                                        if (ViewBag.PageIndex == i)
+                                        {
+                                            <li class="page-item active">
+                                                <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
+                                            </li>
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    //3.在中间时，当前页数-3到当前页数+3
+                                    for (int i = ViewBag.PageIndex - 7 / 2; i <= ViewBag.PageIndex + 7 / 2; i++)
+                                    {
+                                        if (ViewBag.PageIndex == i)
+                                        {
+                                            <li class="page-item active">
+                                                <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
+                                            </li>
+                                        }
+                                    }
+                                }
+                                //当当前页数不是最后一个页数时，显示‘下一页’
+                                if (ViewBag.PageIndex != ViewBag.PageCount)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </nav>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+    <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;">
+        <div class="toast-header">
+            <strong class="mr-auto">删除成功</strong>
+            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="toast-body">
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script>
+        function confirmDelete(uniqueId, isDeleteClicked) {
+            var deleteSpan = "deleteSpan_" + uniqueId;
+            var confirmDeleteSpan = "confirmDeleteSpan_" + uniqueId;
+            if (isDeleteClicked) {
+                $('#' + deleteSpan).attr("class", "d-none");
+                $('#' + confirmDeleteSpan).attr("class", "d-inline");
+            } else {
+                $('#' + deleteSpan).attr("class", "d-inline");
+                $('#' + confirmDeleteSpan).attr("class", "d-none");
+            }
+        }
+        function DeleteArticle(title, id) {
+            $.ajax({
+                url: "/Article/DeleteArticle/",
+                type: "post",
+                data: { Id: id },
+                dataType: "json",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        $(".toast-body").text("文章：<" + title + ">已删除！");
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                        $("#" + id + "").remove();
+                    } else {
+                        $(".toast-body").text("未知错误");
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+        $(function () {
+            $(".toast").hide();
+        })
+        $(".toast").on('hidden.bs.toast', function () {
+            $(".toast").hide();
+        });
+    </script>
+}

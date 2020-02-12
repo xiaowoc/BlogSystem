@@ -1,0 +1,152 @@
+﻿@model UserInformationDto
+@using BlogSystem.DTO
+@{
+    ViewBag.Title = "用户详情";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container body-content">
+    <hr />
+    <div class="d-flex mb-3 border border-secondary rounded shadow-sm">
+        <div class="p-2">
+            <a href="/Home/UserDetails/@Model.Id"><img class="border" style="width:48px;height:48px;border-radius:50%" src="~/Image/@Html.DisplayFor(model => model.ImagePath)" /></a>
+        </div>
+        <div class="p-2">
+            <span><a href="/Home/UserDetails/@Model.Id" class="text-decoration-none text-dark">@Html.DisplayFor(model => model.Email) (@Model.SiteName)</a></span>
+            <span class="d-block"><small class="text-muted">关注 @Model.FocusCount 人·粉丝 @Model.FansCount 人</small></span>
+        </div>
+        <div class="ml-auto p-3">
+            @if (ViewBag.IsFocused)//已关注
+            {
+                <button id="btnunFocus" type="button" class="btn btn-outline-secondary">√ 已关注</button>
+            }
+            else//未关注
+            {
+                <button id="btnFocus" type="button" class="btn btn-outline-danger">关注</button>
+            }
+
+        </div>
+    </div>
+    <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;">
+        <div class="toast-header">
+            <strong class="mr-auto">提示</strong>
+            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="toast-body">
+
+        </div>
+    </div>
+    <div class="container">
+        <hr>
+        <h3 class="d-flex">
+            <a href="/Article/ArticleList?userId=@Model.Id" class="text-decoration-none text-dark mr-1">TA的部分文章</a>
+            <span class="badge badge-secondary">@ViewBag.ArticlesCount</span>
+            <a href="/Article/ArticleList?userId=@Model.Id" class="ml-auto btn btn-outline-secondary">更多</a>
+        </h3>
+        @foreach (ArticleDto item in ViewBag.FamousArticles)
+        {
+            <div class="my-3">
+                <hr />
+                <strong class="d-block h4">
+                    <a href="/Article/ArticleDetails/@item.Id" class="text-dark text-decoration-none">@item.Title</a>
+                </strong>
+                <div class="py-2">
+                    <p class="h6">@item.Content</p>
+                    <a href="/Article/ArticleDetails/@item.Id" class="text-success text-decoration-none">阅读全文</a>
+                </div>
+                <div class="text-muted">
+                    <small>@item.CreateTime</small>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+@section headers{
+    <style>
+        h3 > .text-dark:hover {
+            color: deepskyblue !important;
+        }
+
+        strong > .text-dark:hover {
+            color: deepskyblue !important;
+        }
+    </style>
+}
+@section scripts{
+    <script>
+        $(function () {//初始化绑定点击事件和hover事件
+            $("#btnFocus").on('click', function () {
+                $("#btnFocus").bind('click', FocusUser());
+            });
+            $("#btnunFocus").on('click', function () {
+                $("#btnunFocus").bind('click', UnFocusUser());
+            });
+            $("#btnunFocus").hover(function () {
+                $("#btnunFocus").text("取消关注");
+            },function () {
+                    $("#btnunFocus").text("√ 已关注");
+            });
+        })
+
+        function FocusUser() {
+            var focusUserId = '@Model.Id';
+            $.ajax({
+                url: "/Home/FocusUser/",
+                dataType: "json",
+                data: { focusUserId: focusUserId },
+                type: "post",
+                success: function (data) {
+                    $(".toast-body").text(data.result);
+                    $(".toast").toast('show');
+                    if (data.status == "ok") {
+                        $("#btnFocus").text('√ 已关注');//修改显示内容
+                        $("#btnFocus").attr('class', 'btn btn-outline-secondary');//更换显示class
+                        $("#btnFocus").unbind();//取消绑定事件
+                        $("#btnFocus").attr('id', 'btnunFocus');//id修改
+                        $("#btnunFocus").hover(function () {//再给新id绑定hover事件
+                            $("#btnunFocus").text("取消关注");
+                        }, function () {
+                            $("#btnunFocus").text("√ 已关注");
+                        });
+                        $("#btnunFocus").on('click', function () {//再给新id绑定点击事件
+                            $("#btnunFocus").bind('click', UnFocusUser());
+                        });
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }       
+
+        function UnFocusUser() {
+            var focusUserId = '@Model.Id';
+            $.ajax({
+                url: "/Home/UnFocusUser/",
+                dataType: "json",
+                data: { focusUserId: focusUserId },
+                type: "post",
+                success: function (data) {
+                    $(".toast-body").text(data.result);
+                    $(".toast").toast('show');
+                    if (data.status == "ok") {
+                        $("#btnunFocus").text('关注');
+                        $("#btnunFocus").attr('class', 'btn btn-outline-danger');
+                        $("#btnunFocus").unbind();
+                        $("#btnunFocus").attr('id', 'btnFocus');
+                        $("#btnFocus").on('click', function () {
+                            $("#btnFocus").bind('click', FocusUser());
+                        });
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }       
+    </script>
+}

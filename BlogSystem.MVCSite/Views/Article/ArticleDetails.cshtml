@@ -1,0 +1,461 @@
+﻿@model BlogSystem.DTO.ArticleDto
+@using BlogSystem.DTO
+@{
+    ViewBag.Title = "文章详情";
+}
+<div class="container body-content mt-4">
+    <div>
+        <div>
+            <h1> @Html.DisplayFor(model => model.Title)</h1>
+        </div>
+        <div>
+            <a href="/Home/UserDetails/@ViewBag.UserId" class="mr-3 text-decoration-none"> @Html.DisplayFor(model => model.Email)</a>
+            <span class="text-muted mr-3">发布于 @Html.DisplayFor(model => model.CreateTime)</span>
+            <span class="text-muted">
+                @if (Model.CategoryNames.Length == 0)
+                {
+                    <span class="text-black-50">暂无分类</span>
+                }
+                else
+                {
+                    foreach (var item in Model.CategoryNames)
+                    {
+                        @(item + "    ")
+                    }
+                }
+            </span>
+        </div>
+        <hr />
+        <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;">
+            <div class="toast-header">
+                <strong class="mr-auto">提示</strong>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="toast-body">
+
+            </div>
+        </div>
+        <div>
+            @Html.Raw(Model.Content)
+        </div>
+        <button class="btn btn-outline-white pl-0" id="btnLike" onclick="BtnGoodHandle(this)">🙂<span id="like">@Model.GoodCount</span></button>
+        <button class="btn btn-outline-white pl-0" id="btnHate" onclick="BtnBadHandle(this)">😟<span id="hate">@Model.BadCount</span></button>
+        <hr />
+        <div class="d-flex mb-3" id="info">
+            <div class="py-2 pr-2">
+                <a href="/Home/UserDetails/@ViewBag.UserId"><img class="border" style="width:48px;height:48px;border-radius:50%" src="~/Image/@Html.DisplayFor(model => model.imagePath)" /></a>
+            </div>
+            <div class="p-2">
+                <span><a href="/Home/UserDetails/@ViewBag.UserId" class="text-decoration-none text-dark">@Html.DisplayFor(model => model.Email)</a></span>
+                <apan class="d-block"><small class="text-muted">发了 @ViewBag.ArticleCount 篇文章·粉丝 @ViewBag.FansCount </small></apan>
+            </div>
+            <div class="ml-auto p-2">
+                @if (ViewBag.IsFocused)//已关注
+                {
+                    <button id="btnunFocus" type="button" class="btn btn-outline-secondary">√ 已关注</button>
+                }
+                else//未关注
+                {
+                    <button id="btnFocus" type="button" class="btn btn-outline-danger">关注</button>
+                }
+            </div>
+        </div>
+    </div>
+    <h3 class="my-3">评论</h3>
+    <div class="input-group mb-3">
+        <img class="border mr-1" style="width:38px;height:38px;border-radius:50%" src="~/Image/@Html.DisplayFor(model => model.imagePath)" />
+        <input type="text" class="col-12 form-control" placeholder="请自觉遵守互联网相关的政策法规，严禁发布色情、暴力、反动的言论。" name="txtComment" id="txtComment" value="" />
+        <div class="input-group-append">
+            <button onclick="AddComment()" name="btnComment" id="btnComment" class="btn btn-outline-primary" data-container="body" data-toggle="popover" data-placement="top">发表评论</button>
+        </div>
+    </div>
+
+    <ul id="comments" class="list-group list-group-flush">
+    </ul>
+    <nav class="mt-3 d-flex justify-content-center">
+        <ul class="pagination" id="pagination">
+            <li class="page-item" id="itemPrev">
+                <a href="#info" class="page-link" id="linkPrev">上一页</a>
+            </li>
+            <li class="page-item" id="itemNext">
+                <a href="#info" class="page-link" id="linkNext">下一页</a>
+            </li>
+        </ul>
+    </nav>
+
+</div>
+@section headers{
+    <style>
+        .categoryIds {
+            float: left;
+            margin: 0px 30px !important;
+            padding: 0px;
+        }
+    </style>
+}
+@section scripts{
+    <script>
+        var articleId = '@Model.Id';
+
+        $(function () {
+            //初始化绑定点击事件和hover事件
+            $("#btnFocus").on('click', function () {
+                $("#btnFocus").bind('click', FocusUser());
+            });
+            $("#btnunFocus").on('click', function () {
+                $("#btnunFocus").bind('click', UnFocusUser());
+            });
+            $("#btnunFocus").hover(function () {
+                $("#btnunFocus").text("取消关注");
+            },function () {
+                    $("#btnunFocus").text("√ 已关注");
+            });
+
+            //------------------------------------------------------
+
+            $('[data-toggle="popover"]').popover();
+            $("#txtComment").on("input", function () {
+                $("#txtComment").attr("class", "col-12 form-control");
+                $("#btnComment").attr("class", "btn btn-outline-primary");
+            });
+
+            //---------------------------------------------------------
+
+            $(".toast").hide();
+
+            //--------------------------------------------------------
+
+            GetComments(1, 10);//获取评论 第一页 十条数据
+
+            GetLikeHate();//查看是否已经点赞
+        })
+
+         $(".toast").on('hidden.bs.toast', function () {
+            $(".toast").hide();
+         });
+
+        function GetLikeHate() {
+            $.ajax({
+                url: "/Article/GetLikeHate",
+                type: "get",
+                data: { id: articleId },
+                dataType: "json",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        if (data.result=="like") {
+                            $("#like").attr("class", "text-danger");
+                            $("#btnLike").attr("disabled",true);
+                            $("#btnHate").attr("disabled",true);
+                        } else if (data.result=="hate") {
+                            $("#hate").attr("class", "text-danger");
+                            $("#btnHate").attr("disabled",true);
+                            $("#btnLike").attr("disabled",true);
+                        }
+                    } else if (data.status == "fail") {
+
+                    }
+                }
+            })
+        }
+
+        function BtnGoodHandle(btn)
+        {
+            $.ajax({
+                url: "/Article/GoodCount/",
+                type: "post",
+                data: { id: articleId },
+                dataType: "json",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        $(".toast-body").text("点赞成功");
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                        $("#like").attr("class", "text-danger").html(data.goodCount);
+                        $("#btnLike").attr("disabled", true);
+                        $("#btnHate").attr("disabled", true);
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            });
+        }
+        function BtnBadHandle(btn)
+        {
+            $.ajax({
+                url: "/Article/BadCount/",
+                type: "post",
+                data: { id: articleId },
+                dataType: "json",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        $(".toast-body").text("点踩成功");
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                        $("#hate").attr("class", "text-danger").html(data.badCount);
+                        $("#btnHate").attr("disabled", true);
+                        $("#btnLike").attr("disabled", true);
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            });
+        }
+        function AddComment()
+        {
+            var txtVal = $("#txtComment").val();
+            if (txtVal == "" || txtVal == null || txtVal == undefined) {
+                $("#txtComment").attr("class", "col-12 form-control border-danger");
+                $("#btnComment").attr("class", "btn btn-outline-danger");
+                $(".toast-body").text("你还没有评论！");
+                $(".toast").show();
+                $(".toast").toast('show');
+            }
+            else
+            {
+                $.ajax({
+                    url: "/Article/AddComment/",
+                    type: "post",
+                    dataType:"json",
+                    data: {
+                        Id: articleId,
+                        Content: document.getElementById("txtComment").value
+                    }, success: function (data) {
+                        if (data.status == "ok") {
+                            $(".toast-body").text("已发送");
+                            $(".toast").show();
+                            $(".toast").toast('show');
+                            GetComments(1,10);
+                            $("#txtComment").val("");//内容清空
+                        } else if (data.status == "fail") {
+                            $(".toast-body").text(data.result);
+                            $(".toast").show();
+                            $(".toast").toast('show');
+                        }
+                    }
+                });
+            }
+        }
+
+        function FocusUser() {
+            var focusUserId = '@ViewBag.UserId';
+            $.ajax({
+                url: "/Home/FocusUser/",
+                dataType: "json",
+                data: { focusUserId: focusUserId },
+                type: "post",
+                success: function (data) {
+                    $(".toast-body").text(data.result);
+                    $(".toast").show();
+                    $(".toast").toast('show');
+                    if (data.status == "ok") {
+                        $("#btnFocus").text('√ 已关注');//修改显示内容
+                        $("#btnFocus").attr('class', 'btn btn-outline-secondary');//更换显示class
+                        $("#btnFocus").unbind();//取消绑定事件
+                        $("#btnFocus").attr('id', 'btnunFocus');//id修改
+                        $("#btnunFocus").hover(function () {//再给新id绑定hover事件
+                            $("#btnunFocus").text("取消关注");
+                        }, function () {
+                            $("#btnunFocus").text("√ 已关注");
+                        });
+                        $("#btnunFocus").on('click', function () {//再给新id绑定点击事件
+                            $("#btnunFocus").bind('click', UnFocusUser());
+                        });
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function UnFocusUser() {
+            var focusUserId = '@ViewBag.UserId';
+            $.ajax({
+                url: "/Home/UnFocusUser/",
+                dataType: "json",
+                data: { focusUserId: focusUserId },
+                type: "post",
+                success: function (data) {
+                    $(".toast-body").text(data.result);
+                    $(".toast").show();
+                    $(".toast").toast('show');
+                    if (data.status == "ok") {
+                        $("#btnunFocus").text('关注');
+                        $("#btnunFocus").attr('class', 'btn btn-outline-danger');
+                        $("#btnunFocus").unbind();
+                        $("#btnunFocus").attr('id', 'btnFocus');
+                        $("#btnFocus").on('click', function () {
+                            $("#btnFocus").bind('click', FocusUser());
+                        });
+                    }
+                    else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function GetDateFormat(str) {
+            return new Date(parseInt(str.substr(6, 13))).toLocaleDateString();
+        }
+
+        function GetComments(pageIndex,pageSize) {
+            $.ajax({
+                url: "/Article/GetComments",
+                dataType: "json",
+                data: { id: articleId, pageIndex: pageIndex, pageSize: pageSize },
+                type: "get",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        $("#comments li").remove();
+                        var comment = data.data;
+                        var commentLi = '';
+                        $.each(comment, function (k, v) {
+                            var dateOfBirth = GetDateFormat(comment[k].CreateTime);
+                            commentLi += '<li class="list-group-item">' +
+                                '<div class="d-flex">' +
+                                '<div class="p-2">' +
+                                ' <a href="/Home/UserDetails/' + comment[k].UserId + '" class="mr-1"><img class="border" style="width:24px;height:24px;border-radius:50%" src="/Image/' + comment[k].ImagePath + '" /></a>' +
+                                '</div>' +
+                                '<div class="p-2">' +
+                                '<span class="h6"><strong><a href="/Home/UserDetails/' + comment[k].UserId + '" class="text-decoration-none text-dark">' + comment[k].Email + '   </a></strong></span><small class="text-muted">' + dateOfBirth + '</small>' +
+                                '<span class="d-block mt-2">' + comment[k].Content + '</span>' +
+                                '</div>' +
+                                ' </div>' +
+                                ' </li>';
+                        });
+                        $("#comments").append(commentLi);
+                        //删除旧的分页
+                        $(".pagination > li").not(":first").not(":last").remove();
+                        //解除click事件 否则多次循环出错
+                        $("#linkPrev").unbind("click"); $("#linkNext").unbind("click");
+                        var pageCount = data.pageCount;
+                        var pageCurrentIndex = data.pageCurrentIndex;
+                        var paginationLi = '';
+                        if (pageCount == 0 || pageCount == 1) { $("#pagination").hide(); }
+                        else if (pageCount <= 7)//分页总数小于7
+                        {
+                            $("#pagination").show();
+                            $("#itemPrev").attr("class", "page-item");
+                            $("#linkPrev").removeAttr("tabindex");
+                            //当当前页数是第一个时，禁用‘上一页’
+                            if (pageCurrentIndex == 1) {
+                                $("#itemPrev").attr("class", "page-item disabled");
+                                $("#linkPrev").attr("tabindex", "-1");
+                            }
+                            //实际页数小于可显示页数
+                            for (var i = 1; i <= pageCount; i++) {
+                                if (pageCurrentIndex == i) {
+                                    paginationLi += '<li class="page-item active">' +
+                                        '<span class="page-link">' + i + '</span>' +
+                                        '</li>';
+                                }
+                                else {
+                                    paginationLi += ' <li class="page-item">' +
+                                        ' <a class="page-link" href="#info">' + i + '</a>' +
+                                        ' </li >';
+                                }
+                            }
+                            $("#itemNext").attr("class", "page-item");
+                            $("#linkNext").removeAttr("tabindex");
+                            //当当前页数是最后一个页数时，禁用‘下一页’
+                            if (pageCurrentIndex == pageCount) {
+                                $("#itemNext").attr("class", "page-item disabled");
+                                $("#linkNext").attr("tabindex", "-1");
+                            }
+                        }
+                        else//分页总数大于7
+                        {
+                            $("#pagination").show();
+                            $("#itemPrev").attr("class", "page-item");
+                            $("#linkPrev").removeAttr("tabindex");
+                            //当当前页数是第一个时，禁用‘上一页’
+                            if (pageCurrentIndex == 1) {
+                                $("#itemPrev").attr("class", "page-item disabled");
+                                $("#linkPrev").attr("tabindex", "-1");
+                            }
+                            //实际页数大于可显示页数，这时得分三种情况
+                            if (pageCurrentIndex <= 7 / 2 + 1) {
+                                //1.在头部前4个不用动
+                                //实际页数小于可显示页数
+                                for (var i = 1; i <= 7; i++) {
+                                    if (pageCurrentIndex == i) {
+                                        paginationLi += '<li class="page-item active">' +
+                                            '<span class="page-link">' + i + '</span>' +
+                                            '</li>';
+                                    }
+                                    else {
+                                        paginationLi += '<li class="page-item">' +
+                                            '<a class="page-link" href="#info">' + i + '</a>' +
+                                            '</li>';
+                                    }
+                                }
+                            }
+                            else if (pageCount - pageCurrentIndex <= 7 / 2) {
+                                //2.在尾部总页数-当前页数<=3不用动
+                                for (var i = pageCount - (7 - 1); i <= pageCount; i++) {
+                                    if (pageCurrentIndex == i) {
+                                        paginationLi += '<li class="page-item active">' +
+                                            '<span class="page-link">' + i + '</span>' +
+                                            '</li>';
+                                    }
+                                    else {
+                                        paginationLi += '<li class="page-item">' +
+                                            '<a class="page-link" href="#info">' + i + '</a>' +
+                                            '</li>';
+                                    }
+                                }
+                            }
+                            else {
+                                //3.在中间时，当前页数-3到当前页数+3
+                                for (var i = pageCurrentIndex - 7 / 2; i <= pageCurrentIndex + 7 / 2; i++) {
+                                    if (pageCurrentIndex == i) {
+                                        paginationLi += '<li class="page-item active">' +
+                                            '<span class="page-link">' + i + '</span>' +
+                                            '</li>';
+                                    }
+                                    else {
+                                        paginationLi += '<li class="page-item">' +
+                                            '<a class="page-link" href="#info">' + i + '</a>' +
+                                            '</li>';
+                                    }
+                                }
+                            }
+                            $("#itemNext").attr("class", "page-item");
+                            $("#linkNext").removeAttr("tabindex");
+                            //当当前页数是最后一个页数时，禁用‘下一页’
+                            if (pageCurrentIndex == pageCount) {
+                                $("#itemNext").attr("class", "page-item disabled");
+                                $("#linkNext").attr("tabindex", "-1");
+                            }
+                        }
+                        //将paginationLi添加进‘上一页’和‘下一页’之间
+                        $(paginationLi).insertAfter("#itemPrev");
+                        //循环结束后给a标签绑定GetComment事件
+                        $("#pagination li a").not(":first").not(":last").each(function () {
+                            //获取索引，绑定事件
+                            $(this).click(function () { GetComments($(this).text(), 10); });
+                        });
+                        //给‘上一页’和‘下一页’绑定GetComments事件
+                        $("#linkPrev").click(function () { GetComments(parseInt(pageCurrentIndex) - 1, 10) });
+                        $("#linkNext").click(function () { GetComments(parseInt(pageCurrentIndex) + 1, 10) });
+                    }
+                    else {
+                        $(".toast-body").text(data.status);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+    </script>
+}

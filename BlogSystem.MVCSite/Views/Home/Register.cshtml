@@ -1,0 +1,69 @@
+﻿@model BlogSystem.MVCSite.Models.UserViewModels.RegisterViewModel
+
+@{
+    Layout = null;
+}
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册</title>
+    <link rel="icon" href="~/blog.ico" mce_href="~/blog.ico" type="image/x-icon">
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+    <link href="~/Content/spaces.css" rel="stylesheet" />
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body>
+    <main>
+        <section class="min-vh-100 d-flex align-items-center my-5">
+            <div class="container">
+                <div class="row align-items-center justify-content-center">
+                    <div class="col-8 col-md-6 col-lg-6 offset-md-1 order-md-2">
+                        <img src="~/signup.svg" alt="..." class="img-fluid" />
+                    </div>
+                    <div class="col-12 col-md-5 col-lg-5 order-md-1">
+                        <h2>注册</h2>
+                        @using (Html.BeginForm())
+                        {
+                            @Html.AntiForgeryToken()
+
+                            <div class="form-horizontal">
+                                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "sr-only" })
+                                    @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", placeholder = "邮箱" } })
+                                    @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "sr-only" })
+                                    @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", placeholder = "密码" } })
+                                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.ConfirmPassword, htmlAttributes: new { @class = "sr-only" })
+                                    @Html.EditorFor(model => model.ConfirmPassword, new { htmlAttributes = new { @class = "form-control", placeholder = "确认密码" } })
+                                    @Html.ValidationMessageFor(model => model.ConfirmPassword, "", new { @class = "text-danger" })
+                                </div>
+
+                                <div class="form-group">
+                                    <input type="submit" value="注册" class="btn btn-info btn-lg btn-block" />
+                                    @Html.ActionLink("返回首页", "Index", new { }, new { @class = "btn btn-outline-gray btn-lg btn-block mt-2" })
+                                </div>
+                                <div class="mt-4">
+                                    <span>已有账号？@Html.ActionLink("立即登陆", "Login", new { })</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/bootstrap")
+</body>
+</html>

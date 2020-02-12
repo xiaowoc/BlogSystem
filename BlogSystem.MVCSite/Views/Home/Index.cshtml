@@ -1,0 +1,134 @@
+﻿@model List<ArticleDto>
+@using BlogSystem.DTO
+@{
+    ViewBag.Title = "首页";
+}
+<div id="myCarousel" class="carousel slide mt-2" data-ride="carousel">
+    <ol class="carousel-indicators">
+        <li data-target="#myCarousel" data-slide-to="0" class=""></li>
+        <li data-target="#myCarousel" data-slide-to="1" class=""></li>
+        <li data-target="#myCarousel" data-slide-to="2" class=""></li>
+    </ol>
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img">
+                <rect width="100%" height="100%" fill="#777"></rect>
+            </svg>
+            <div class="container">
+                <div class="carousel-caption text-right">
+                    <h1>
+                        @(Model.Count <= 0 ? "暂无" : Model[0].Title)
+                    </h1>
+                    <p>
+                        @(Model.Count <= 0 ? "暂无" : Model[0].Content)
+                    </p>
+                    <p>
+                        <a class="btn btn-lg btn-outline-dark stretched-link" href="/Article/ArticleDetails/@(Model.Count<=0?Guid.Empty :Model[0].Id)" role="button">查看</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img">
+                <rect width="100%" height="100%" fill="#777"></rect>
+            </svg>
+            <div class="container">
+                <div class="carousel-caption text-right">
+                    <h1>
+                        @(Model.Count <= 1 ? "暂无" : Model[1].Title)
+                    </h1>
+                    <p>
+                        @(Model.Count <= 1 ? "暂无" : Model[1].Content)
+                    </p>
+                    <p>
+                        <a class="btn btn-lg btn-outline-dark stretched-link" href="/Article/ArticleDetails/@(Model.Count<=1?Guid.Empty :Model[1].Id)" role="button">查看</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img">
+                <rect width="100%" height="100%" fill="#777"></rect>
+            </svg>
+            <div class="container">
+                <div class="carousel-caption text-right">
+                    <h1>
+                        @(Model.Count <= 2 ? "暂无" : Model[2].Title)
+                    </h1>
+                    <p>
+                        @(Model.Count <= 2 ? "暂无" : Model[2].Content)
+                    </p>
+                    <p>
+                        <a class="btn btn-lg btn-outline-dark stretched-link" href="/Article/ArticleDetails/@(Model.Count<=2?Guid.Empty :Model[2].Id)" role="button">查看</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="sr-only">Prev</span></a>
+    <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="sr-only">Next</span></a>
+</div>
+<div class="container" id="cardList">
+    <div class="d-flex mb-2">
+        <p class="h4 d-inline">随机文章 </p> <button class="btn btn-outline-secondary ml-auto" onclick="GetArticles()">换一换</button>
+    </div>
+</div>
+@section headers {
+    <link href="~/Content/carousel.css" rel="stylesheet" />
+}
+@section scripts{
+    <script type="text/javascript">
+        function GetDateFormat(str) {
+            return new Date(parseInt(str.substr(6, 13))).toLocaleDateString();
+        }
+        function GetArticles() {
+            $.ajax({
+                url: "/Article/GetArticles",
+                type: "get",
+                data: { returnCount: 4},
+                dataType: "json",
+                success: function (data) {
+                    $("#cardListRow").remove();
+                    var html = '';
+                    var div = '';
+                    $.each(data, function (k, v) {  // 这里的函数参数是键值对的形式，k代表键名，v代表值
+                        var dateOfBirth = GetDateFormat(data[k].CreateTime);
+                        div += '<div class="col-lg-6 col-sm-12 mb-4">' +
+                            '<div class="row no-gutters border shadow-sm">' +
+                            '<div class="col-4">' +
+                            '<img src="/Image/' + data[k].imagePath + '" name="searchImg" class="rounded-circle w-75"/>' +
+                            '</div>' +
+                            '<div class="col-8 position-static">' +
+                            '<div class="card-body">' +
+                            '<h5 class="card-title">' + data[k].Title + '</h5>' +
+                            '<p class="card-text">' + data[k].Content + '</p>' +
+                            '<p class="card-text"><small class="text-muted">' + data[k].Email + ' 发布于 ' + dateOfBirth + '</small></p>' +
+                            '<a href="/Article/ArticleDetails/' + data[k].Id + '" class="stretched-link">继续阅读</a>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div> ';
+                    });
+                    html = '<div class="row" id="cardListRow">' + div + '</div>';
+                    $("#cardList").append(html);
+                    resize();//修改图片大小
+                }
+            })
+        }
+        $(function () {
+            GetArticles();
+        })
+
+        window.onresize = function () {
+            resize();
+        }
+        //改变元素大小
+        function resize() {
+            var width = $('img[name="searchImg"]').prop('width');//获取宽度
+            var height = $('img[name="searchImg"]').prop('height');//获取长度
+            if (width != height) {
+                $('img[name="searchImg"]').prop('height', width);
+            }
+        };
+    </script>
+}
