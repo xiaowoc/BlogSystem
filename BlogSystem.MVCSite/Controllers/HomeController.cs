@@ -352,7 +352,7 @@ namespace BlogSystem.MVCSite.Controllers
                 UserInformationDto user = await userManager.GetUserByEmail(model.Email);
                 string token;
                 //查找的Email是否存在，在就获取id制作token，否则返回不存在
-                if (await userManager.ExistsUser(user.Id))
+                if (user != null && await userManager.ExistsUser(user.Id))
                 {
                     token = JwtHelper.SetJwtEncode((user.Id).ToString(), 600);//jwt有效期十分钟
                     string modelError = await userManager.ForgetPassword(token, user.Id, user.Email);

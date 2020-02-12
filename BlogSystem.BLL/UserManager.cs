@@ -272,7 +272,7 @@ namespace BlogSystem.BLL
             using (IResetPasswordService resetPasswordSvc = new ResetPasswordService())
             {
                 ResetPassword resetPassword = new ResetPassword();
-                if (await resetPasswordSvc.GetAll().AnyAsync(m => m.UserId == userId))
+                if (await resetPasswordSvc.GetAll().AnyAsync(m => m.UserId == userId && m.IsSuccess == false))
                 {
                     resetPassword = await resetPasswordSvc.GetAll().Where(m => m.UserId == userId && m.IsSuccess == false).OrderByDescending(m => m.CreatTime).FirstAsync();
                 }
