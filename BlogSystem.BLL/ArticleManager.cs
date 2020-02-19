@@ -253,6 +253,31 @@ namespace BlogSystem.BLL
             }
         }
 
+        public async Task<List<ArticleDto>> GetAllArticlesByUserIdAndCategoryId(Guid userId, Guid categoryId, int pageIndex, int pageSize)
+        {
+            using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
+            {
+                var list = await articleToCategorySvc.GetAllByPageOrder(pageSize, pageIndex, m => m.Article.UserId == userId && m.BlogCategoryId == categoryId, false).Include(m => m.Article).Include(m => m.Article.User).Select(m => new ArticleDto()
+                {
+                    Title = m.Article.Title,
+                    GoodCount = m.Article.GoodCount,
+                    BadCount = m.Article.BadCount,
+                    Email = m.Article.User.Email,
+                    Content = m.Article.Content,
+                    CreateTime = m.CreatTime,
+                    Id = m.Article.Id,
+                    imagePath = m.Article.User.ImagePath
+                }).ToListAsync();
+                foreach (var articleDto in list)
+                {
+                    var cates = await articleToCategorySvc.GetAll().Include(m => m.BlogCategory).Where(m => m.ArticleId == articleDto.Id).ToListAsync();
+                    articleDto.CategoryIds = cates.Select(m => m.BlogCategoryId).ToArray();
+                    articleDto.CategoryNames = cates.Select(m => m.BlogCategory.CategoryName).ToArray();
+                }
+                return list;
+            }
+        }
+
         public async Task<List<BlogCategoryDto>> GetAllCategoriesByUserId(Guid userId, int pageIndex, int pageSize)
         {
             using (IBlogCategory blogCategorySvc = new BlogCategoryService())
@@ -277,11 +302,31 @@ namespace BlogSystem.BLL
             }
         }
 
+        public async Task<List<BlogCategoryDto>> GetCategoriesByCount(Guid userId, int count)
+        {
+            using (IBlogCategory blogCategorySvc = new BlogCategoryService())
+            {
+                return await blogCategorySvc.GetAll().Where(m => m.UserId == userId).Select(m => new BlogCategoryDto()
+                {
+                    Id = m.Id,
+                    BlogCategoryName = m.CategoryName
+                }).Take(count).ToListAsync();
+            }
+        }
+
         public async Task<int> GetArticleDataCount(Guid id)
         {
             using (IArticleService articleSvc = new ArticleService())
             {
                 return await articleSvc.GetAll().CountAsync(m => m.UserId == id);
+            }
+        }
+
+        public async Task<int> GetArticleDataCount(Guid userId, Guid categoryId)
+        {
+            using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
+            {
+                return await articleToCategorySvc.GetAll().CountAsync(m => m.Article.UserId == userId && m.BlogCategoryId == categoryId);
             }
         }
 
@@ -486,11 +531,45 @@ namespace BlogSystem.BLL
                     CreateTime = m.CreatTime,
                     //Email = m.User.Email,
                     imagePath = m.User.ImagePath,
-                    //GoodCount = m.GoodCount,
-                    //BadCount = m.BadCount
+                    GoodCount = m.GoodCount,
+                    BadCount = m.BadCount
                 }).Take(count).ToListAsync();
             }
         }
+
+        /// <summary>
+        /// 查找当前账户最新的文章（置顶或不置顶）
+        /// </summary>
+        /// <param name="count">数量</param>
+        /// <returns></returns>
+        public async Task<List<ArticleDto>> GetCurrentUserLatestArticle(int count, Guid userId,bool isTop)
+        {
+            using (IArticleService articleService = new ArticleService())
+            {
+                var list = await articleService.GetAll().Where(m => m.User.Id == userId && m.IsTop == isTop).OrderByDescending(m => m.CreatTime).Include(m => m.User).Select(m => new ArticleDto()
+                {
+                    Id = m.Id,
+                    Title = m.Title,
+                    Content = m.IntroContent,
+                    CreateTime = m.CreatTime,
+                    Email = m.User.Email,
+                    imagePath = m.User.ImagePath,
+                    GoodCount = m.GoodCount,
+                    BadCount = m.BadCount
+                }).Take(count).ToListAsync();
+                using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
+                {
+                    foreach (var item in list)
+                    {
+                        var cate = await articleToCategorySvc.GetAll().Include(m => m.BlogCategory).Where(m => m.ArticleId == item.Id).ToListAsync();
+                        item.CategoryIds = cate.Select(m => m.BlogCategoryId).ToArray();
+                        item.CategoryNames = cate.Select(m => m.BlogCategory.CategoryName).ToArray();
+                    }
+                }
+                return list;
+            }
+        }
+
 
         /// <summary>
         /// 获取所有文章的总数

@@ -226,8 +226,10 @@ namespace BlogSystem.MVCSite.Controllers
             }
             UserInformationDto user = await userManager.GetUserById(id.Value);
             IArticleManager articleManager = new ArticleManager();
-            ViewBag.FamousArticles = await articleManager.GetCurrentUserFamousArticle(5, id.Value);//选取5篇文章
+            ViewBag.LatestArticles = await articleManager.GetCurrentUserLatestArticle(5, id.Value, false);//选取5篇最新发布的文章，不含置顶
+            ViewBag.TopArticles = await articleManager.GetCurrentUserLatestArticle(100, id.Value, true);//选取100篇最新发布的置顶文章(不足100取找到的最大值)
             ViewBag.ArticlesCount = await articleManager.GetArticleDataCount(user.Id);//查找文章总数
+            ViewBag.CategoriesCount = await articleManager.GetCategoryDataCount(user.Id);//查找分类总数
             string userId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
@@ -235,6 +237,7 @@ namespace BlogSystem.MVCSite.Controllers
             }
             string userid = Session["userId"] == null ? userId : Session["userId"].ToString();
             ViewBag.IsFocused = userid == "" ? false : await userManager.IsFocused(Guid.Parse(userid), id.Value);//id为空也视为没关注
+            ViewBag.TenTags = await articleManager.GetCategoriesByCount(id.Value, 10);//返回10个分类
             return View(user);
         }
 

@@ -26,5 +26,9 @@ namespace BlogSystem.Models
         /// 反对数
         /// </summary>
         public int BadCount { get; set; }
+        /// <summary>
+        /// 是否置顶
+        /// </summary>
+        public bool IsTop { get; set; } = false;
     }
 }

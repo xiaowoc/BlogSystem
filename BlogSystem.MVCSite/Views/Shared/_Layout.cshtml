@@ -13,16 +13,16 @@
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("headers", required: false)
 </head>
-<body class="d-flex flex-column h-100 pb-0">
-    <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
-        <div class="container">
-            <a href="@Url.Action("Index","Home",new { area=""})" class="navbar-brand"><img src="~/blog.ico" class="mr-2" style="width:36px;height:36px" alt="blog" /></a>
+<body>
+    <nav class="navbar navbar-expand-md navbar-light bg-white fixed-top shadow">
+        <div class="container-xl">
+            <a href="@Url.Action("Index","Home",new { area=""})" class="navbar-brand"><img src="/IconSvg/blog.png" class="mr-2" style="width:36px;height:36px" alt="blog" /></a>
             <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
-                    <li class="nav-item">@Html.ActionLink("主页", "Index", "Home", new { }, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("个人主页", "UserDetail", "Home", new { }, new { @class = "nav-link" })</li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarArticleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             文章
@@ -74,11 +74,11 @@
         </div>
     </nav>
     @RenderBody()
-    <footer class="footer mt-auto py-3 bg-light">
-        <div class="container">
+    @*<footer class="footer py-3 bg-light">
+        <div class="container-xl">
             <span class="text-muted">&copy; @DateTime.Now.Year - 我的 ASP.NET 应用程序</span>
         </div>
-    </footer>
+    </footer>*@
     @RenderSection("scripts", required: false)
     <script>
         $(function () {

@@ -88,7 +88,7 @@ namespace BlogSystem.MVCSite.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> ArticleList(string userId, int pageIndex = 1, int pageSize = 7)
+        public async Task<ActionResult> ArticleList(string userId, string categoryId = null, int pageIndex = 1, int pageSize = 7)
         {
             Guid currentUserId = Guid.Parse(Session["userId"].ToString());//获取当前登陆的id
             if (userId == null)
@@ -105,8 +105,21 @@ namespace BlogSystem.MVCSite.Controllers
                 ErrorController.message = "未能找到对应ID的用户，请稍后再试";
                 return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
             }
-            var articles = await articleManager.GetAllArticlesByUserId(userIdGuid, (pageIndex - 1), pageSize);//数据库是从0开始的
-            var dataCount = await articleManager.GetArticleDataCount(userIdGuid);//文章总数
+            //新增按照用户id和分类id查找文章，默认为不找分类id
+            Guid categoryIdGuid;
+            Guid.TryParse(categoryId, out categoryIdGuid);
+            List<ArticleDto> articles;
+            int dataCount;
+            if (categoryIdGuid == Guid.Empty)
+            {
+                articles = await articleManager.GetAllArticlesByUserId(userIdGuid, (pageIndex - 1), pageSize);//数据库是从0开始的
+                dataCount = await articleManager.GetArticleDataCount(userIdGuid);//文章总数
+            }
+            else
+            {
+                articles = await articleManager.GetAllArticlesByUserIdAndCategoryId(userIdGuid, categoryIdGuid, (pageIndex - 1), pageSize);//数据库是从0开始的
+                dataCount = await articleManager.GetArticleDataCount(userIdGuid, categoryIdGuid);//文章总数
+            }
             ViewBag.PageCount = dataCount % pageSize == 0 ? dataCount / pageSize : dataCount / pageSize + 1;//总页数
             ViewBag.PageIndex = pageIndex;//当前页数
             ViewBag.PageSize = pageSize;//当前显示数目
@@ -452,13 +465,27 @@ namespace BlogSystem.MVCSite.Controllers
             var articleManager = new ArticleManager();
             if (id == null || !await articleManager.ExistsArticle(id.Value))
             {
-                return Json(new { status = "未能找到对应文章ID的评论，请稍后再试" });
+                return Json(new { status = "fail", result = "未能找到对应文章ID的评论，请稍后再试" }, JsonRequestBehavior.AllowGet);
             }
             //查找所有评论
             List<CommentDto> data = await articleManager.GetCommentByArticleId(id.Value, pageIndex - 1, pageSize);
             int commentCount = await articleManager.GetCommentCountByArticleId(id.Value);
             int pageCount = commentCount % pageSize == 0 ? commentCount / pageSize : commentCount / pageSize + 1;//总页数
             return Json(new { status = "ok", pageCurrentIndex = pageIndex, pageCount, data }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetMoreCategories(Guid? userId)
+        {
+            IUserManager userManager = new UserManager();
+            if (userId == null || !await userManager.ExistsUser(userId.Value))
+            {
+                return Json(new { status = "fail", result = "获取所有分类失败，请稍后再试" }, JsonRequestBehavior.AllowGet);
+            }
+            var articleManager = new ArticleManager();
+            List<BlogCategoryDto> data =await articleManager.GetAllCategories(userId.Value);
+            return Json(new { status = "ok", data ,userId }, JsonRequestBehavior.AllowGet);
         }
     }
 }

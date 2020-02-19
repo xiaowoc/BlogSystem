@@ -449,8 +449,8 @@
                         $("#linkPrev").click(function () { GetComments(parseInt(pageCurrentIndex) - 1, 10) });
                         $("#linkNext").click(function () { GetComments(parseInt(pageCurrentIndex) + 1, 10) });
                     }
-                    else {
-                        $(".toast-body").text(data.status);
+                    else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
                         $(".toast").show();
                         $(".toast").toast('show');
                     }

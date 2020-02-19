@@ -16,11 +16,17 @@ namespace BlogSystem.IBLL
 
         Task<List<BlogCategoryDto>> GetAllCategories(Guid userId);
 
+        Task<List<BlogCategoryDto>> GetCategoriesByCount(Guid userId, int count);
+
         Task<List<ArticleDto>> GetAllArticlesByUserId(Guid userId, int pageIndex, int pageSize);
+
+        Task<List<ArticleDto>> GetAllArticlesByUserIdAndCategoryId(Guid userId, Guid categoryId, int pageIndex, int pageSize);
 
         Task<List<BlogCategoryDto>> GetAllCategoriesByUserId(Guid userId, int pageIndex, int pageSize);
 
         Task<int> GetArticleDataCount(Guid id);
+
+        Task<int> GetArticleDataCount(Guid userId, Guid categoryId);
 
         Task<int> GetSearchArticleDataCount(string searchWord);
 
@@ -61,6 +67,8 @@ namespace BlogSystem.IBLL
         Task<List<ArticleDto>> GetFamousArticle(int count);
 
         Task<List<ArticleDto>> GetCurrentUserFamousArticle(int count, Guid userId);
+
+        Task<List<ArticleDto>> GetCurrentUserLatestArticle(int count, Guid userId, bool isTop);
 
         Task<int> GetAllArticleDataCount();
 

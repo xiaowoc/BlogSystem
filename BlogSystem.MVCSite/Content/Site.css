@@ -1,6 +1,14 @@
 ﻿body {
-    padding-top: 50px;
+    padding-top: 65px;
     padding-bottom: 20px;
+    background-color: #f4f5f5;
+    padding-bottom: 0px;
+}
+
+.whiteBlock {
+    background-color: #FFF;
+    padding: 20px;
+    margin: 10px -8px 0 -8px;
 }
 
 /* Set padding to keep content from hitting the edges */
@@ -14,6 +22,16 @@
 */
 .dl-horizontal dt {
     white-space: normal;
+}
+
+a, .btn-link {
+    color: #3b86d8;
+}
+
+.myIcon {
+    width: 20px;
+    height: 20px;
+    margin-top: -3px;
 }
 
 /* Set width on the form input elements since they're 100% wide by default 
