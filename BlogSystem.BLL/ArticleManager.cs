@@ -89,33 +89,27 @@ namespace BlogSystem.BLL
             }
         }
 
-        public async Task CreateArticle(string title, string content, Guid[] categroyIds, Guid userId)
+        public async Task CreateArticle(string title, string content, Guid[] categoryIds, Guid userId)
         {
             using (IArticleService articleSvc = new ArticleService())
             {
                 //处理内容
                 string IntroContent = FilterHTML(content);
-                Article article = new Article() { Title = title, Content = content, IntroContent = IntroContent, UserId = userId };
+                Article article = new Article()
+                {
+                    Title = title,
+                    Content = content,
+                    IntroContent = IntroContent,
+                    UserId = userId,
+                    IsTop = categoryIds != null ? categoryIds.Contains(Guid.Parse("00000000-0000-0000-0000-000000000001")) : false
+                };
                 await articleSvc.CreatAsync(article);//添加完会自动有Id值
                 Guid articleId = article.Id;
-
-
-                ////给简介表添加相同内容
-                //using (IArticleIntroService articleintroSvc = new ArticleIntroService())
-                //{
-                //    //处理内容
-                //    string articleIntroContent = FilterHTML(content);
-                //    //创建实体
-                //    ArticleIntro articleIntro = new ArticleIntro() { Title = article.Title, IntroContent = articleIntroContent, UserId = userId, Id = articleId, GoodCount = article.GoodCount, BadCount = article.BadCount, CreatTime = article.CreatTime, IsRemoved = article.IsRemoved };
-                //    //创建
-                //    await articleintroSvc.CreatAsync(articleIntro);
-                //}
-
                 using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
                 {
-                    if (categroyIds != null)//当分类不为空时才循环添加
+                    if (categoryIds != null)//当分类不为空时才循环添加
                     {
-                        foreach (var categroyId in categroyIds)
+                        foreach (var categroyId in categoryIds)
                         {
                             await articleToCategorySvc.CreatAsync(new ArticleToCategory()
                             {
@@ -148,21 +142,8 @@ namespace BlogSystem.BLL
                 article.Title = title;
                 article.Content = content;
                 article.IntroContent = IntroContent;
+                article.IsTop = categoryIds != null ? categoryIds.Contains(Guid.Parse("00000000-0000-0000-0000-000000000001")) : false;
                 await articleSvc.EditAsync(article);
-
-                ////给简介表修改相同内容
-                //using (IArticleIntroService articleintroSvc = new ArticleIntroService())
-                //{
-                //    //查找实体
-                //    var articleIntro = await articleintroSvc.GetOneByIdAsync(articleId);
-                //    //处理内容
-                //    string articleIntroContent = FilterHTML(content);
-                //    //修改实体内容
-                //    articleIntro.IntroContent = articleIntroContent;
-                //    //提交修改
-                //    await articleintroSvc.EditAsync(articleIntro);
-                //}
-
                 using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
                 {
                     //循环删除一篇文章的多个分类
@@ -282,7 +263,8 @@ namespace BlogSystem.BLL
         {
             using (IBlogCategory blogCategorySvc = new BlogCategoryService())
             {
-                return await blogCategorySvc.GetAllByPageOrder(pageSize, pageIndex, m => m.UserId == userId, false).Select(m => new BlogCategoryDto()
+                Guid allId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                return await blogCategorySvc.GetAllByPageOrder(pageSize, pageIndex, m => m.UserId == userId || m.Id == allId, false).Select(m => new BlogCategoryDto()
                 {
                     Id = m.Id,
                     BlogCategoryName = m.CategoryName
@@ -294,7 +276,8 @@ namespace BlogSystem.BLL
         {
             using (IBlogCategory blogCategorySvc = new BlogCategoryService())
             {
-                return await blogCategorySvc.GetAll().Where(m => m.UserId == userId).Select(m => new BlogCategoryDto()
+                Guid allId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                return await blogCategorySvc.GetAll().Where(m => m.UserId == userId || m.Id == allId).Select(m => new BlogCategoryDto()
                 {
                     Id = m.Id,
                     BlogCategoryName = m.CategoryName
@@ -306,7 +289,8 @@ namespace BlogSystem.BLL
         {
             using (IBlogCategory blogCategorySvc = new BlogCategoryService())
             {
-                return await blogCategorySvc.GetAll().Where(m => m.UserId == userId).Select(m => new BlogCategoryDto()
+                Guid allId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                return await blogCategorySvc.GetAll().Where(m => m.UserId == userId || m.Id == allId).Select(m => new BlogCategoryDto()
                 {
                     Id = m.Id,
                     BlogCategoryName = m.CategoryName
@@ -342,7 +326,8 @@ namespace BlogSystem.BLL
         {
             using (IBlogCategory blogCategorySvc = new BlogCategoryService())
             {
-                return await blogCategorySvc.GetAll().CountAsync(m => m.UserId == id);
+                Guid allId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                return await blogCategorySvc.GetAll().CountAsync(m => m.UserId == id || m.Id == allId);
             }
         }
 
@@ -416,6 +401,15 @@ namespace BlogSystem.BLL
             {
                 Article article = await articleSvc.GetOneByIdAsync(articleId);
                 await articleSvc.DeleteAsync(article);
+            }
+            using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
+            {
+                List<ArticleToCategory> list = await articleToCategorySvc.GetAll().Where(m => m.ArticleId == articleId).ToListAsync();
+                foreach (var item in list)
+                {
+                    await articleToCategorySvc.DeleteAsync(item,false);
+                }
+                await articleToCategorySvc.Save();
             }
         }
 
@@ -542,7 +536,7 @@ namespace BlogSystem.BLL
         /// </summary>
         /// <param name="count">数量</param>
         /// <returns></returns>
-        public async Task<List<ArticleDto>> GetCurrentUserLatestArticle(int count, Guid userId,bool isTop)
+        public async Task<List<ArticleDto>> GetCurrentUserLatestArticle(int count, Guid userId, bool isTop)
         {
             using (IArticleService articleService = new ArticleService())
             {

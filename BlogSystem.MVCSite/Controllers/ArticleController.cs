@@ -216,7 +216,14 @@ namespace BlogSystem.MVCSite.Controllers
             }
             else
             {
-                ErrorController.message = "非本人分类不可进行编辑";
+                if (data.UserId == Guid.Parse("00000000-0000-0000-0000-000000000001"))
+                {
+                    ErrorController.message = "系统内置分类不可进行编辑";
+                }
+                else
+                {
+                    ErrorController.message = "非本人分类不可进行编辑";
+                }
                 return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
             }
         }
@@ -290,7 +297,14 @@ namespace BlogSystem.MVCSite.Controllers
             }
             else
             {
-                ErrorController.message = "非本人分类不可进行编辑";
+                if (data.UserId == Guid.Parse("00000000-0000-0000-0000-000000000001"))
+                {
+                    ErrorController.message = "系统内置分类不可进行编辑";
+                }
+                else
+                {
+                    ErrorController.message = "非本人分类不可进行编辑";
+                }
                 return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
             }
         }
@@ -403,15 +417,13 @@ namespace BlogSystem.MVCSite.Controllers
             IArticleManager articleManager = new ArticleManager();
             if (Id == null || !await articleManager.ExistsArticle(Id.Value))//文章id找不到则跳转文章不存在错误页面
             {
-                ErrorController.message = "未能找到对应ID的文章，请稍后再试";
-                return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+                return Json(new { status = "fail", result = "未能找到对应ID的文章，请稍后再试" });//返回错误信息
             }//要经过上面的判断否则会出错
             var data = await articleManager.GetOneArticleById(Id.Value);
             Guid userId = Guid.Parse(Session["userId"].ToString());
             if (data.userId != userId)//文章作者才可删除文章
             {
-                ErrorController.message = "非本人文章不可进行删除";
-                return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+                return Json(new { status = "fail", result = "非本人文章不可进行删除" });//返回错误信息
             }
             await articleManager.RemoveArticle(Id.Value);
             return Json(new { status = "ok" });
@@ -423,15 +435,24 @@ namespace BlogSystem.MVCSite.Controllers
             IArticleManager articleManager = new ArticleManager();
             if (Id == null || !await articleManager.ExistsCategory(Id.Value))//文章id找不到则跳转分类不存在错误页面
             {
-                ErrorController.message = "未能找到对应ID的分类，请稍后再试";
-                return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+                return Json(new { status = "fail", result = "未能找到对应ID的分类，请稍后再试" });//返回错误信息
             }//要经过上面的判断否则会出错
             BlogCategory data = await articleManager.GetOneCategoryById(Id.Value);//获取分类id的所有信息
             Guid userId = Guid.Parse(Session["userId"].ToString());
             if (data.UserId != userId)//文章作者才可删除文章
             {
-                ErrorController.message = "非本人分类不可进行删除";
-                return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+                if (data.UserId == Guid.Parse("00000000-0000-0000-0000-000000000001"))//如果是01用户，说明是系统内置分类，不可删除
+                {
+                    return Json(new { status = "fail", result = "系统内置分类不可进行删除" });//返回错误信息
+                }
+                else
+                {
+                    return Json(new { status = "fail", result = "非本人分类不可进行删除" });//返回错误信息
+                }
+            }
+            if (await articleManager.GetArticleDataCount(userId, Id.Value) != 0)
+            {
+                return Json(new { status = "fail", result = "已有文章引用了该分类，如需删除请先编辑文章取消引用该分类" });//返回错误信息
             }
             await articleManager.RemoveCategory(Id.Value);
             return Json(new { status = "ok" });
@@ -484,8 +505,8 @@ namespace BlogSystem.MVCSite.Controllers
                 return Json(new { status = "fail", result = "获取所有分类失败，请稍后再试" }, JsonRequestBehavior.AllowGet);
             }
             var articleManager = new ArticleManager();
-            List<BlogCategoryDto> data =await articleManager.GetAllCategories(userId.Value);
-            return Json(new { status = "ok", data ,userId }, JsonRequestBehavior.AllowGet);
+            List<BlogCategoryDto> data = await articleManager.GetAllCategories(userId.Value);
+            return Json(new { status = "ok", data, userId }, JsonRequestBehavior.AllowGet);
         }
     }
 }

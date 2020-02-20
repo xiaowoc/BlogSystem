@@ -58,12 +58,12 @@
                             {
                                 <div class="d-none" id="confirmDeleteSpan_@item.Id">
                                     <span>确认是否删除？</span>
-                                    <button class="btn btn-danger btn-sm" type="submit" onclick="DeleteArticle('@item.Title','@item.Id')">是</button>
+                                    <button class="btn btn-danger btn-sm" type="button" onclick="DeleteArticle('@item.Title','@item.Id')">是</button>
                                     <a href="#" class="btn btn-secondary btn-sm" onclick="confirmDelete('@item.Id',false)">否</a>
                                 </div>
                                 <div class="d-inline" id="deleteSpan_@item.Id">
                                     @Html.ActionLink("编辑", "EditArticle", new { id = item.Id }, new { @class = "btn btn-outline-warning btn-sm" })
-                                    <a href="#" class="btn btn-outline-danger btn-sm" onclick="confirmDelete('@item.Id',true)">删除</a>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete('@item.Id',true)">删除</button>
                                 </div>
                             }
                             @Html.ActionLink("详情", "ArticleDetails", new { id = item.Id }, new { @class = "btn btn-outline-info btn-sm" })
@@ -235,8 +235,8 @@
                         $(".toast").show();
                         $(".toast").toast('show');
                         $("#" + id + "").remove();
-                    } else {
-                        $(".toast-body").text("未知错误");
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
                         $(".toast").show();
                         $(".toast").toast('show');
                     }
