@@ -215,7 +215,7 @@ namespace BlogSystem.BLL
                     GoodCount = m.GoodCount,
                     BadCount = m.BadCount,
                     Email = m.User.Email,
-                    Content = m.Content,
+                    Content = m.IntroContent,
                     CreateTime = m.CreatTime,
                     Id = m.Id,
                     imagePath = m.User.ImagePath
@@ -244,7 +244,7 @@ namespace BlogSystem.BLL
                     GoodCount = m.Article.GoodCount,
                     BadCount = m.Article.BadCount,
                     Email = m.Article.User.Email,
-                    Content = m.Article.Content,
+                    Content = m.Article.IntroContent,
                     CreateTime = m.CreatTime,
                     Id = m.Article.Id,
                     imagePath = m.Article.User.ImagePath

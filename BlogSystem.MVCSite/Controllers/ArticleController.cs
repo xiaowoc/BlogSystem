@@ -123,8 +123,14 @@ namespace BlogSystem.MVCSite.Controllers
             ViewBag.PageCount = dataCount % pageSize == 0 ? dataCount / pageSize : dataCount / pageSize + 1;//总页数
             ViewBag.PageIndex = pageIndex;//当前页数
             ViewBag.PageSize = pageSize;//当前显示数目
+            ViewBag.Category = categoryIdGuid == Guid.Empty ? null : await articleManager.GetOneCategoryById(categoryIdGuid);
             ViewBag.IsCurrentUser = userIdGuid == currentUserId ? true : false;//是否为当前登陆用户
             ViewBag.RequestId = userIdGuid;//当前请求id
+            ViewBag.TenTags = await articleManager.GetCategoriesByCount(userIdGuid, 10);//返回10个分类
+            ViewBag.ArticlesCount = await articleManager.GetArticleDataCount(userIdGuid);//查找文章总数
+            ViewBag.CategoriesCount = await articleManager.GetCategoryDataCount(userIdGuid);//查找分类总数
+            ViewBag.IsFocused = currentUserId == Guid.Empty ? false : await userManager.IsFocused(currentUserId, userIdGuid);//id为空也视为没关注
+            ViewBag.User = await userManager.GetUserById(userIdGuid);
             return View(articles);
         }
 

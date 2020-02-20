@@ -184,7 +184,7 @@ namespace BlogSystem.MVCSite.Controllers
                 Email = data.Email,
                 FansCount = data.FansCount,
                 FocusCount = data.FocusCount,
-                SiteName = data.SiteName,
+                Nickname = data.Nickname,
                 ImagePath = data.ImagePath
             };
             return View(model);
@@ -206,7 +206,7 @@ namespace BlogSystem.MVCSite.Controllers
                 string newFileName = ProcessUploadedFile(model);
                 IUserManager userManager = new UserManager();
                 Guid userId = Guid.Parse(Session["userId"].ToString());
-                if (await userManager.ChangeUserInformation(userId, model.SiteName, newFileName) && model.Email == Session["loginName"].ToString())//防止邮箱被修改
+                if (await userManager.ChangeUserInformation(userId, model.Nickname, newFileName) && model.Email == Session["loginName"].ToString())//防止邮箱被修改
                 {
                     Response.Write("<script>alert('资料修改成功');location.href='/Home/Index';</script>");
                 }
@@ -218,6 +218,11 @@ namespace BlogSystem.MVCSite.Controllers
         [HttpGet]
         public async Task<ActionResult> UserDetails(Guid? id)
         {
+            Guid currentUserId = Guid.Parse(Session["userId"].ToString());//获取当前登陆的id
+            if (id == null && currentUserId != null)
+            {
+                return RedirectToAction(nameof(UserDetails), new { id = currentUserId });
+            }
             IUserManager userManager = new UserManager();
             if (id == null || !await userManager.ExistsUser(id.Value))
             {

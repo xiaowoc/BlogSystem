@@ -31,14 +31,14 @@ namespace BlogSystem.BLL
             }
         }
 
-        public async Task<bool> ChangeUserInformation(Guid userId, string siteName, string imagePath)
+        public async Task<bool> ChangeUserInformation(Guid userId, string nickname, string imagePath)
         {
             using (IUserService userSvc = new UserService())
             {
                 var user = await userSvc.GetAll().FirstAsync(m => m.Id == userId);
                 if (user != null)
                 {
-                    user.SiteName = siteName;
+                    user.Nickname = nickname;
                     user.ImagePath = imagePath;
                     await userSvc.EditAsync(user);
                     return true;
@@ -64,7 +64,7 @@ namespace BlogSystem.BLL
                         FansCount = m.FansCount,
                         FocusCount = m.FocusCount,
                         ImagePath = m.ImagePath,
-                        SiteName = m.SiteName
+                        Nickname = m.Nickname
                     }).FirstAsync();
                 }
                 else
@@ -102,7 +102,7 @@ namespace BlogSystem.BLL
                 UserInformationDto user = await GetUserByEmail(email);
                 if (user == null)//如果没有相同邮箱则通过
                 {
-                    await userSvc.CreatAsync(new User() { Email = email, Password = password, SiteName = "小破站", ImagePath = "default.png" });
+                    await userSvc.CreatAsync(new User() { Email = email, Password = password });
                     return true;
                 }
                 else//有相同邮箱则不可
@@ -131,7 +131,7 @@ namespace BlogSystem.BLL
                         FansCount = m.FansCount,
                         FocusCount = m.FocusCount,
                         ImagePath = m.ImagePath,
-                        SiteName = m.SiteName
+                        Nickname = m.Nickname
                     }).FirstAsync();
                 }
                 else

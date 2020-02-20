@@ -25,8 +25,8 @@ namespace BlogSystem.Models
         /// </summary>
         public int FocusCount { get; set; }
         /// <summary>
-        /// 网站名
+        /// 昵称
         /// </summary>
-        public string SiteName { get; set; }
+        public string Nickname { get; set; } = "新用户" + DateTime.Now.Ticks;
     }
 }

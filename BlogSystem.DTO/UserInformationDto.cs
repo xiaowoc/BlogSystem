@@ -14,8 +14,8 @@ namespace BlogSystem.DTO
         public string Email { get; set; }
         [Display(Name = "图片")]
         public string ImagePath { get; set; }
-        [Display(Name = "网站名字")]
-        public string SiteName { get; set; }
+        [Display(Name = "昵称")]
+        public string Nickname { get; set; }
         [Display(Name = "粉丝数")]
         public int FansCount { get; set; }
         [Display(Name = "关注数")]

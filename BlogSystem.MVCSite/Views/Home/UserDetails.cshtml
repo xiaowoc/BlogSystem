@@ -95,11 +95,12 @@
                 <div class="whiteBlock text-center">
                     <img class="rounded-circle m-2" style="width:88px;height:88px;border-radius:50%" src="~/Image/@Model.ImagePath" />
                     <p class="m-2">@Model.Email</p>
+                    <p>@Model.Nickname</p>
                     <span class="badge badge-info">关注 @Model.FocusCount 人</span>
                     <span class="badge badge-info">粉丝 @Model.FansCount 人</span>
                     @if (ViewBag.IsFocused)//已关注
                     {
-                        <a href="#" id="btnunFocus" class="badge badge-danger">√ 已关注</a>
+                        <a href="#" id="btnunFocus" class="badge badge-secondary">√ 已关注</a>
                     }
                     else//未关注
                     {
@@ -161,7 +162,7 @@
                     $(".toast").toast('show');
                     if (data.status == "ok") {
                         $("#btnFocus").text('√ 已关注');//修改显示内容
-                        $("#btnFocus").attr('class', 'btn btn-outline-secondary');//更换显示class
+                        $("#btnFocus").attr('class', 'badge badge-secondary');//更换显示class
                         $("#btnFocus").unbind();//取消绑定事件
                         $("#btnFocus").attr('id', 'btnunFocus');//id修改
                         $("#btnunFocus").hover(function () {//再给新id绑定hover事件
@@ -193,7 +194,7 @@
                     $(".toast").toast('show');
                     if (data.status == "ok") {
                         $("#btnunFocus").text('关注');
-                        $("#btnunFocus").attr('class', 'btn btn-outline-danger');
+                        $("#btnunFocus").attr('class', 'badge badge-danger');
                         $("#btnunFocus").unbind();
                         $("#btnunFocus").attr('id', 'btnFocus');
                         $("#btnFocus").on('click', function () {

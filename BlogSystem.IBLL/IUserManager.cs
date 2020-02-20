@@ -13,7 +13,7 @@ namespace BlogSystem.IBLL
         Task<bool> Register(string email, string password);
         bool Login(string email, string password,out Guid userId);
         Task<bool> ChangePassword(Guid userId, string oldPwd, string newPwd);
-        Task<bool> ChangeUserInformation(Guid userId, string siteName, string imagePath);
+        Task<bool> ChangeUserInformation(Guid userId, string nickName, string imagePath);
         /// <summary>
         /// 返回DTO类型数据
         /// </summary>

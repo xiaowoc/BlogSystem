@@ -76,6 +76,10 @@
     <Compile Include="Migrations\202002191453124_ArticleAddIsTop.Designer.cs">
       <DependentUpon>202002191453124_ArticleAddIsTop.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202002201020000_ChangeSiteNameToNickName.cs" />
+    <Compile Include="Migrations\202002201020000_ChangeSiteNameToNickName.Designer.cs">
+      <DependentUpon>202002201020000_ChangeSiteNameToNickName.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResetPassword.cs" />
@@ -97,6 +101,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202002191453124_ArticleAddIsTop.resx">
       <DependentUpon>202002191453124_ArticleAddIsTop.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002201020000_ChangeSiteNameToNickName.resx">
+      <DependentUpon>202002201020000_ChangeSiteNameToNickName.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

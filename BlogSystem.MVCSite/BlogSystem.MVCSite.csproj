@@ -164,6 +164,8 @@
     <Compile Include="Tools\Md5Helper.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="IconSvg\delete.svg" />
+    <Content Include="IconSvg\edit.svg" />
     <Content Include="IconSvg\hate.svg" />
     <Content Include="IconSvg\blog.ico" />
     <Content Include="IconSvg\blog.png" />

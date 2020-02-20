@@ -1,100 +1,123 @@
 ﻿@model IEnumerable<BlogSystem.DTO.ArticleDto>
+@using BlogSystem.DTO
 
 @{
     ViewBag.Title = "文章列表";
+    UserInformationDto userInfo = ViewBag.User;
 }
-<div class="container body-content">
-    <hr />
-    <p>
-        @if (ViewBag.IsCurrentUser)
-        {
-            @Html.ActionLink("创建新文章", "CreateArticle", "Article", new { }, new { @class = "btn btn-outline-secondary" })
-        }
-    </p>
-    <table class="table table-hover">
-        <thead class="thead-light">
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Title)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.CreateTime)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Email)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.GoodCount)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.BadCount)
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Count<BlogSystem.DTO.ArticleDto>() != 0)
-            {
-                foreach (var item in Model)
+<div class="container-xl">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="whiteBlock">
+                <div>
+                    @if (ViewBag.Category != null)
+                    {
+                        <p class="text-muted h5">分类: <span class="badge badge-info">@ViewBag.Category.CategoryName</span></p>
+                    }
+                    else
+                    {
+                        <p class="text-muted h5">所有文章</p>
+                    }
+                </div>
+                @if (Model.Count<BlogSystem.DTO.ArticleDto>() != 0)
                 {
-                    <tr id="@item.Id">
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Title)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.CreateTime)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Email)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.GoodCount)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.BadCount)
-                        </td>
-                        <td class="text-right">
-                            @if (ViewBag.IsCurrentUser)
-                            {
+                    foreach (var item in Model)
+                    {
+                        <div class="mt-3">
+                            <hr />
+                            <strong class="d-block h3">
+                                <a href="/Article/ArticleDetails/@item.Id" class=" text-decoration-none">@item.Title</a>
+                            </strong>
+                            <div class="py-2">
+                                <p class="h6">@item.Content</p>
+                            </div>
+                            <div>
+                                <span><img class="myIcon" src="/IconSvg/calendar.svg" title="创建日期" /> @item.CreateTime</span>
+                                <span><img class="myIcon" src="/IconSvg/like.svg" title="喜欢" />@item.GoodCount</span>
+                                <span><img class="myIcon" src="/IconSvg/hate.svg" title="不喜欢" />@item.BadCount</span>
+                                @if (ViewBag.IsCurrentUser)
+                                {
+                                    <a href="/Article/EditArticle/@item.Id"><img class="myIcon" src="/IconSvg/edit.svg" title="编辑" /></a>
+                                }
                                 <div class="d-none" id="confirmDeleteSpan_@item.Id">
-                                    <span>确认是否删除？</span>
-                                    <button class="btn btn-danger btn-sm" type="button" onclick="DeleteArticle('@item.Title','@item.Id')">是</button>
-                                    <a href="#" class="btn btn-secondary btn-sm" onclick="confirmDelete('@item.Id',false)">否</a>
+                                    <span class="badge badge-warning">确认是否删除？</span>
+                                    <a href="javascript:void(0);" class="badge badge-danger" onclick="DeleteArticle('@item.Title','@item.Id')">是</a>
+                                    <a href="javascript:void(0);" class="badge badge-dark" onclick="confirmDelete('@item.Id',false)">否</a>
                                 </div>
                                 <div class="d-inline" id="deleteSpan_@item.Id">
-                                    @Html.ActionLink("编辑", "EditArticle", new { id = item.Id }, new { @class = "btn btn-outline-warning btn-sm" })
-                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete('@item.Id',true)">删除</button>
+                                    @if (ViewBag.IsCurrentUser)
+                                    {
+                                        <a href="javascript:void(0);" onclick="confirmDelete('@item.Id',true)"><img class="myIcon" src="/IconSvg/delete.svg" title="删除" /></a>
+                                    }
                                 </div>
-                            }
-                            @Html.ActionLink("详情", "ArticleDetails", new { id = item.Id }, new { @class = "btn btn-outline-info btn-sm" })
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr><td colspan="6" class="text-center">什么都没有哦</td></tr>
-            }
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="6">
-                    <nav>
-                        <ul class="pagination justify-content-center">
-                            @if (ViewBag.PageCount == 0 || ViewBag.PageCount == 1)
-                            {
-                            }
-                            else if (ViewBag.PageCount <= 7)//分页总数小于7
-                            {
-                                //当当前页数不是第一个时，显示‘上一页’
-                                if (ViewBag.PageIndex != 1)
+                            </div>
+                            <div id="categories">
+                                @for (int i = 0; i < item.CategoryIds.Count(); i++)
                                 {
-                                    <li class="page-item">
-                                        <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
+                                    <a href="/Article/ArticleList?userId=@ViewBag.RequestId&categoryId=@item.CategoryIds[i]" class="badge badge-warning mr-1">@item.CategoryNames[i]</a>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <hr />
+                    <div class="text-center"><strong>什么都没有哦</strong></div>
+                }
+                <nav class="mt-3">
+                    <ul class="pagination">
+                        @if (ViewBag.PageCount == 0 || ViewBag.PageCount == 1)
+                        {
+                        }
+                        else if (ViewBag.PageCount <= 7)//分页总数小于7
+                        {
+                            //当当前页数不是第一个时，显示‘上一页’
+                            if (ViewBag.PageIndex != 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
+                                </li>
+                            }
+                            //实际页数小于可显示页数
+                            for (int i = 1; i <= ViewBag.PageCount; i++)
+                            {
+                                if (ViewBag.PageIndex == i)
+                                {
+                                    <li class="page-item active">
+                                        <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
                                     </li>
                                 }
+                                else
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
+                                    </li>
+                                }
+                            }
+                            //当当前页数不是最后一个页数时，显示‘下一页’
+                            if (ViewBag.PageIndex != ViewBag.PageCount)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
+                                </li>
+                            }
+                        }
+                        else//分页总数大于7
+                        {
+                            //当当前页数不是第一个时，显示‘上一页’
+                            if (ViewBag.PageIndex != 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
+                                </li>
+                            }
+                            //实际页数大于可显示页数，这时得分三种情况
+                            if (ViewBag.PageIndex <= 7 / 2 + 1)
+                            {
+                                //1.在头部前4个不用动
                                 //实际页数小于可显示页数
-                                for (int i = 1; i <= ViewBag.PageCount; i++)
+                                for (int i = 1; i <= 7; i++)
                                 {
                                     if (ViewBag.PageIndex == i)
                                     {
@@ -109,97 +132,101 @@
                                         </li>
                                     }
                                 }
-                                //当当前页数不是最后一个页数时，显示‘下一页’
-                                if (ViewBag.PageIndex != ViewBag.PageCount)
-                                {
-                                    <li class="page-item">
-                                        <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
-                                    </li>
-                                }
                             }
-                            else//分页总数大于7
+                            else if (ViewBag.PageCount - ViewBag.PageIndex <= 7 / 2)
                             {
-                                //当当前页数不是第一个时，显示‘上一页’
-                                if (ViewBag.PageIndex != 1)
+                                //2.在尾部总页数-当前页数<=3不用动
+                                for (int i = ViewBag.PageCount - (7 - 1); i <= ViewBag.PageCount; i++)
                                 {
-                                    <li class="page-item">
-                                        <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
-                                    </li>
-                                }
-                                //实际页数大于可显示页数，这时得分三种情况
-                                if (ViewBag.PageIndex <= 7 / 2 + 1)
-                                {
-                                    //1.在头部前4个不用动
-                                    //实际页数小于可显示页数
-                                    for (int i = 1; i <= 7; i++)
+                                    if (ViewBag.PageIndex == i)
                                     {
-                                        if (ViewBag.PageIndex == i)
-                                        {
-                                            <li class="page-item active">
-                                                <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
-                                            </li>
-                                        }
-                                        else
-                                        {
-                                            <li class="page-item">
-                                                <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
-                                            </li>
-                                        }
+                                        <li class="page-item active">
+                                            <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
+                                        </li>
                                     }
-                                }
-                                else if (ViewBag.PageCount - ViewBag.PageIndex <= 7 / 2)
-                                {
-                                    //2.在尾部总页数-当前页数<=3不用动
-                                    for (int i = ViewBag.PageCount - (7 - 1); i <= ViewBag.PageCount; i++)
+                                    else
                                     {
-                                        if (ViewBag.PageIndex == i)
-                                        {
-                                            <li class="page-item active">
-                                                <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
-                                            </li>
-                                        }
-                                        else
-                                        {
-                                            <li class="page-item">
-                                                <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
-                                            </li>
-                                        }
+                                        <li class="page-item">
+                                            <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
+                                        </li>
                                     }
-                                }
-                                else
-                                {
-                                    //3.在中间时，当前页数-3到当前页数+3
-                                    for (int i = ViewBag.PageIndex - 7 / 2; i <= ViewBag.PageIndex + 7 / 2; i++)
-                                    {
-                                        if (ViewBag.PageIndex == i)
-                                        {
-                                            <li class="page-item active">
-                                                <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
-                                            </li>
-                                        }
-                                        else
-                                        {
-                                            <li class="page-item">
-                                                <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
-                                            </li>
-                                        }
-                                    }
-                                }
-                                //当当前页数不是最后一个页数时，显示‘下一页’
-                                if (ViewBag.PageIndex != ViewBag.PageCount)
-                                {
-                                    <li class="page-item">
-                                        <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
-                                    </li>
                                 }
                             }
-                        </ul>
-                    </nav>
-                </td>
-            </tr>
-        </tfoot>
-    </table>
-    <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;">
+                            else
+                            {
+                                //3.在中间时，当前页数-3到当前页数+3
+                                for (int i = ViewBag.PageIndex - 7 / 2; i <= ViewBag.PageIndex + 7 / 2; i++)
+                                {
+                                    if (ViewBag.PageIndex == i)
+                                    {
+                                        <li class="page-item active">
+                                            <a class="page-link" href="#">@i<span class="sr-only">(current)</span></a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
+                                        </li>
+                                    }
+                                }
+                            }
+                            //当当前页数不是最后一个页数时，显示‘下一页’
+                            if (ViewBag.PageIndex != ViewBag.PageCount)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <div class="col-md-3 d-none d-md-block">
+            <div class="whiteBlock text-center">
+                <img class="rounded-circle m-2" style="width:88px;height:88px;border-radius:50%" src="~/Image/@userInfo.ImagePath" />
+                <p class="m-2">@userInfo.Email</p>
+                <p>@userInfo.Nickname</p>
+                <span class="badge badge-info">关注 @userInfo.FocusCount 人</span>
+                <span class="badge badge-info">粉丝 @userInfo.FansCount 人</span>
+                @if (ViewBag.IsFocused)//已关注
+                {
+                    <a href="#" id="btnunFocus" class="badge badge-secondary">√ 已关注</a>
+                }
+                else//未关注
+                {
+                    <a href="#" id="btnFocus" class="badge badge-danger">点我关注</a>
+                }
+            </div>
+            <div class="whiteBlock">
+                <p>标签</p>
+                <div id="categoriesDiv">
+                    @foreach (var item in ViewBag.TenTags)
+                    {
+                        <a href="/Article/ArticleList?userId=@ViewBag.RequestId&categoryId=@item.Id" class="badge badge-success mr-1">@item.BlogCategoryName</a>
+                    }
+                    <a class="badge badge-info" href="javascript:void(0);" onclick="getMoreCategories('@userInfo.Id')">更多</a>
+                </div>
+            </div>
+            <div class="whiteBlock">
+                <p>归档</p>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>文章总计</span>
+                        <span class="badge badge-pill badge-info ">@ViewBag.ArticlesCount</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>分类总计</span>
+                        <span class="badge badge-pill badge-info ">@ViewBag.CategoriesCount</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;z-index:100;">
         <div class="toast-header">
             <strong class="mr-auto">删除成功</strong>
             <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
@@ -243,8 +270,104 @@
                 }
             })
         }
+
+        function getMoreCategories(userId) {
+            $.ajax({
+                url: "/Article/GetMoreCategories",
+                type: "get",
+                dataType: "json",
+                data: { userId },
+                success: function (data) {
+                    if (data.status=="ok") {
+                        var categoriesHtml = "";
+                        for (var i = 0; i < data.data.length; i++) {
+                            var tag = data.data[i];
+                            categoriesHtml += '<a href="/Article/ArticleList?userId=' + data.userId + '&categoryId=' + tag.Id + '" class="badge badge-success mr-1">' + tag.BlogCategoryName + '</a>';
+                        }
+                        $("#categoriesDiv").html(categoriesHtml);
+                    } else if (
+                        data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function FocusUser() {
+            var focusUserId = '@userInfo.Id';
+            $.ajax({
+                url: "/Home/FocusUser/",
+                dataType: "json",
+                data: { focusUserId: focusUserId },
+                type: "post",
+                success: function (data) {
+                    $(".toast-body").text(data.result);
+                    $(".toast").toast('show');
+                    if (data.status == "ok") {
+                        $("#btnFocus").text('√ 已关注');//修改显示内容
+                        $("#btnFocus").attr('class', 'badge badge-secondary');//更换显示class
+                        $("#btnFocus").unbind();//取消绑定事件
+                        $("#btnFocus").attr('id', 'btnunFocus');//id修改
+                        $("#btnunFocus").hover(function () {//再给新id绑定hover事件
+                            $("#btnunFocus").text("取消关注");
+                        }, function () {
+                            $("#btnunFocus").text("√ 已关注");
+                        });
+                        $("#btnunFocus").on('click', function () {//再给新id绑定点击事件
+                            $("#btnunFocus").bind('click', UnFocusUser());
+                        });
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function UnFocusUser() {
+            var focusUserId = '@userInfo.Id';
+            $.ajax({
+                url: "/Home/UnFocusUser/",
+                dataType: "json",
+                data: { focusUserId: focusUserId },
+                type: "post",
+                success: function (data) {
+                    $(".toast-body").text(data.result);
+                    $(".toast").toast('show');
+                    if (data.status == "ok") {
+                        $("#btnunFocus").text('关注');
+                        $("#btnunFocus").attr('class', 'badge badge-danger');
+                        $("#btnunFocus").unbind();
+                        $("#btnunFocus").attr('id', 'btnFocus');
+                        $("#btnFocus").on('click', function () {
+                            $("#btnFocus").bind('click', FocusUser());
+                        });
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
         $(function () {
             $(".toast").hide();
+            //初始化绑定点击事件和hover事件
+            $("#btnFocus").on('click', function () {
+                $("#btnFocus").bind('click', FocusUser());
+            });
+            $("#btnunFocus").on('click', function () {
+                $("#btnunFocus").bind('click', UnFocusUser());
+            });
+            $("#btnunFocus").hover(function () {
+                $("#btnunFocus").text("取消关注");
+            },function () {
+                    $("#btnunFocus").text("√ 已关注");
+            });
         })
         $(".toast").on('hidden.bs.toast', function () {
             $(".toast").hide();
