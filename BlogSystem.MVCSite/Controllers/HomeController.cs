@@ -143,6 +143,46 @@ namespace BlogSystem.MVCSite.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        public async Task<ActionResult> ChangePassword(string oldPwd, string newPwd, string confirmNewPwd)
+        {
+            //获取当前登陆的id，cookie的id需要解密
+            string userCookieId = ""; string message;
+            if (Request.Cookies["userId"] != null)
+            {
+                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                {
+                    return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            string userId = Session["userId"] == null ? userCookieId : Session["userId"].ToString();//优先获取session的id
+            if (oldPwd != null && newPwd != null && confirmNewPwd != null && oldPwd.Trim() != "" && newPwd.Trim() != "" && confirmNewPwd.Trim() != "")
+            {
+                if (newPwd != confirmNewPwd)//防止js验证不生效（被禁用），这里在补充验证
+                {
+                    return Json(new { status = "fail", result = "新密码与确认新密码不一致，请重试！" }, JsonRequestBehavior.AllowGet);
+                }
+                else
+                {
+                    IUserManager userManager = new UserManager();
+                    oldPwd = Md5Helper.Md5(oldPwd);
+                    confirmNewPwd = Md5Helper.Md5(confirmNewPwd);
+                    if (await userManager.ChangePassword(Guid.Parse(userId), oldPwd, confirmNewPwd))
+                    {
+                        return Json(new { status = "ok", result = "修改成功！" }, JsonRequestBehavior.AllowGet);
+                    }
+                    else
+                    {
+                        return Json(new { status = "fail", result = "旧密码错误，请重试！" }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+            }
+            else
+            {
+                return Json(new { status = "fail", result = "提交的数据不可为空" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         [HttpGet]
         [BlogSystemAuth]
         public ActionResult EditPwd()
@@ -171,57 +211,113 @@ namespace BlogSystem.MVCSite.Controllers
             return View(model);
         }
 
-        [HttpGet]
-        [BlogSystemAuth]
-        public async Task<ActionResult> EditInfo()
+        //[HttpGet]
+        //[BlogSystemAuth]
+        //public async Task<ActionResult> EditInfo()
+        //{
+        //    IUserManager userManager = new UserManager();
+        //    Guid userId = Guid.Parse(Session["userId"].ToString());
+        //    var data = await userManager.GetUserById(userId);
+        //    EditInfoViewModel model = new EditInfoViewModel()
+        //    {
+        //        Id = data.Id,
+        //        Email = data.Email,
+        //        FansCount = data.FansCount,
+        //        FocusCount = data.FocusCount,
+        //        Nickname = data.Nickname,
+        //        ImagePath = data.ImagePath
+        //    };
+        //    return View(model);
+        //}
+
+        //[HttpPost]
+        //[BlogSystemAuth]
+        //[ValidateAntiForgeryToken]
+        //public async Task<ActionResult> EditInfo(EditInfoViewModel model)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        if (model.ImagePath != null && model.ImagePath != "default.png")//存在图片路径则删除就图片
+        //        {
+        //            string savepath = Server.MapPath("../Image");
+        //            string oldFileName = Path.Combine(savepath, model.ImagePath);
+        //            System.IO.File.Delete(oldFileName);
+        //        }
+        //        string newFileName = ProcessUploadedFile(model.Image);
+        //        IUserManager userManager = new UserManager();
+        //        Guid userId = Guid.Parse(Session["userId"].ToString());
+        //        if (await userManager.ChangeUserInformation(userId, model.Nickname, newFileName) && model.Email == Session["loginName"].ToString())//防止邮箱被修改
+        //        {
+        //            Response.Write("<script>alert('资料修改成功');location.href='/Home/Index';</script>");
+        //        }
+        //    }
+        //    ModelState.AddModelError(string.Empty, "修改失败");
+        //    return View(model);
+        //}
+
+        [HttpPost]
+        public async Task<ActionResult> ChangeNickName(string nickName)
         {
-            IUserManager userManager = new UserManager();
-            Guid userId = Guid.Parse(Session["userId"].ToString());
-            var data = await userManager.GetUserById(userId);
-            EditInfoViewModel model = new EditInfoViewModel()
+            if (nickName != null && nickName.Trim() != "")
             {
-                Id = data.Id,
-                Email = data.Email,
-                FansCount = data.FansCount,
-                FocusCount = data.FocusCount,
-                Nickname = data.Nickname,
-                ImagePath = data.ImagePath
-            };
-            return View(model);
+                IUserManager userManager = new UserManager();
+                //获取当前登陆的id，cookie的id需要解密
+                string userCookieId = ""; string message;
+                if (Request.Cookies["userId"] != null)
+                {
+                    if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                    {
+                        return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+                string userId = Session["userId"] == null ? userCookieId : Session["userId"].ToString();//优先获取session的id
+                if (await userManager.ChangeUserNickName(Guid.Parse(userId), nickName))
+                {
+                    return Json(new { status = "ok" }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            return Json(new { status = "fail", result = "昵称不可为空！" }, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
-        [BlogSystemAuth]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> EditInfo(EditInfoViewModel model)
+        public async Task<ActionResult> ChangeImage(HttpPostedFileBase file)
         {
-            if (ModelState.IsValid)
+            if (file != null && file.ContentLength > 0)
             {
-                if (model.ImagePath != null && model.ImagePath != "default.png")//存在图片路径则删除就图片
+                IUserManager userManager = new UserManager();
+                //获取当前登陆的id，cookie的id需要解密
+                string userCookieId = ""; string message;
+                if (Request.Cookies["userId"] != null)
+                {
+                    if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                    {
+                        return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+                string userId = Session["userId"] == null ? userCookieId : Session["userId"].ToString();//优先获取session的id
+                UserInformationDto user = await userManager.GetUserById(Guid.Parse(userId));
+                if (user.ImagePath != null && user.ImagePath != "default.png")//存在图片路径则删除就图片
                 {
                     string savepath = Server.MapPath("../Image");
-                    string oldFileName = Path.Combine(savepath, model.ImagePath);
+                    string oldFileName = Path.Combine(savepath, user.ImagePath);
                     System.IO.File.Delete(oldFileName);
                 }
-                string newFileName = ProcessUploadedFile(model);
-                IUserManager userManager = new UserManager();
-                Guid userId = Guid.Parse(Session["userId"].ToString());
-                if (await userManager.ChangeUserInformation(userId, model.Nickname, newFileName) && model.Email == Session["loginName"].ToString())//防止邮箱被修改
+                string newFileName = ProcessUploadedFile(file);
+                if (await userManager.ChangeUserImage(Guid.Parse(userId), newFileName))
                 {
-                    Response.Write("<script>alert('资料修改成功');location.href='/Home/Index';</script>");
+                    return Json(new { status = "ok", path = newFileName }, JsonRequestBehavior.AllowGet);
                 }
             }
-            ModelState.AddModelError(string.Empty, "修改失败");
-            return View(model);
+            return Json(new { status = "fail", result = "图片不可为空，请重试！" }, JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
         public async Task<ActionResult> UserDetails(Guid? id)
         {
-            Guid currentUserId = Guid.Parse(Session["userId"].ToString());//获取当前登陆的id
+            var currentUserId = Session["userId"];//获取当前登陆的id
             if (id == null && currentUserId != null)
             {
-                return RedirectToAction(nameof(UserDetails), new { id = currentUserId });
+                return RedirectToAction(nameof(UserDetails), new { id = currentUserId.ToString() });
             }
             IUserManager userManager = new UserManager();
             if (id == null || !await userManager.ExistsUser(id.Value))
@@ -235,13 +331,19 @@ namespace BlogSystem.MVCSite.Controllers
             ViewBag.TopArticles = await articleManager.GetCurrentUserLatestArticle(100, id.Value, true);//选取100篇最新发布的置顶文章(不足100取找到的最大值)
             ViewBag.ArticlesCount = await articleManager.GetArticleDataCount(user.Id);//查找文章总数
             ViewBag.CategoriesCount = await articleManager.GetCategoryDataCount(user.Id);//查找分类总数
+            //获取当前登陆的id，cookie的id需要解密
             string userId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userId, out message);
+                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userId, out message))
+                {
+                    ErrorController.message = message;
+                    return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+                }
             }
             string userid = Session["userId"] == null ? userId : Session["userId"].ToString();
             ViewBag.IsFocused = userid == "" ? false : await userManager.IsFocused(Guid.Parse(userid), id.Value);//id为空也视为没关注
+            ViewBag.IsCurrentUser = userid == "" ? false : Guid.Parse(userid) == id.Value ? true : false;//是否为当前登陆用户
             ViewBag.TenTags = await articleManager.GetCategoriesByCount(id.Value, 10);//返回10个分类
             return View(user);
         }
@@ -436,10 +538,10 @@ namespace BlogSystem.MVCSite.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        private string ProcessUploadedFile(EditInfoViewModel model)
+        private string ProcessUploadedFile(HttpPostedFileBase file)
         {
             string uniqueFileName = null;
-            if (model.Image != null)
+            if (file != null)
             {
                 //string uploadsFolder = Path.Combine(hostingEnvironment.WebRootPath, "images");//wwwroot下的images
                 //uniqueFileName = Guid.NewGuid().ToString() + "_" + model.Photo.FileName;//特殊唯一文件名
@@ -447,9 +549,9 @@ namespace BlogSystem.MVCSite.Controllers
                 //model.Photo.CopyTo(new FileStream(filePath, FileMode.Create));//复制图片到指定目录
 
                 string savepath = Server.MapPath("../Image");
-                uniqueFileName = Guid.NewGuid().ToString() + "_" + model.Image.FileName;//特殊唯一文件名
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;//特殊唯一文件名
                 string filePath = Path.Combine(savepath, uniqueFileName);//拼接出文件目录文件名
-                model.Image.SaveAs(filePath);//复制图片到指定目录
+                file.SaveAs(filePath);//复制图片到指定目录
             }
             return uniqueFileName;
         }

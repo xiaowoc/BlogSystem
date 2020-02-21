@@ -36,10 +36,10 @@
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarArticleDropdown">
                             @Html.ActionLink("新建文章", "CreateArticle", "Article", new { }, new { @class = "dropdown-item" })
-                            @Html.ActionLink("文章列表", "ArticleList", "Article", new { }, new { @class = "dropdown-item" })
+                            @*@Html.ActionLink("文章列表", "ArticleList", "Article", new { }, new { @class = "dropdown-item" })*@
                             <div class="dropdown-divider"></div>
                             @Html.ActionLink("添加文章类型", "CreateCategory", "Article", new { }, new { @class = "dropdown-item" })
-                            @Html.ActionLink("文章类型列表", "CategoryList", "Article", new { }, new { @class = "dropdown-item" })
+                            @*@Html.ActionLink("文章类型列表", "CategoryList", "Article", new { }, new { @class = "dropdown-item" })*@
                         </div>
                     </li>
                     <li class="nav-item dropdown">
@@ -47,7 +47,7 @@
                             用户
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarUserDropdown">
-                            @Html.ActionLink("修改资料", "EditInfo", "Home", new { }, new { @class = "dropdown-item" })
+                            @*@Html.ActionLink("修改资料", "EditInfo", "Home", new { }, new { @class = "dropdown-item" })*@
                             @Html.ActionLink("修改密码", "EditPwd", "Home", new { }, new { @class = "dropdown-item" })
                             @*<div class="dropdown-divider"></div>
                                 @Html.ActionLink("添加文章类别", "CreateCategory", "Article", new { }, new { @class = "dropdown-item" })*@

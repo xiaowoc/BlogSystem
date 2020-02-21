@@ -17,7 +17,7 @@ namespace BlogSystem.BLL
         {
             using (IUserService userSvc = new UserService())
             {
-                User user = await userSvc.GetAll().FirstAsync(m => m.Id == userId && m.Password == oldPwd);
+                User user = await userSvc.GetAll().FirstOrDefaultAsync(m => m.Id == userId && m.Password == oldPwd);
                 if (user != null)
                 {
                     user.Password = newPwd;
@@ -39,6 +39,42 @@ namespace BlogSystem.BLL
                 if (user != null)
                 {
                     user.Nickname = nickname;
+                    user.ImagePath = imagePath;
+                    await userSvc.EditAsync(user);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+         public async Task<bool> ChangeUserNickName(Guid userId, string nickName)
+        {
+            using (IUserService userSvc = new UserService())
+            {
+                var user = await userSvc.GetAll().FirstAsync(m => m.Id == userId);
+                if (user != null)
+                {
+                    user.Nickname = nickName;
+                    await userSvc.EditAsync(user);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> ChangeUserImage(Guid userId, string imagePath)
+        {
+            using (IUserService userSvc = new UserService())
+            {
+                var user = await userSvc.GetAll().FirstAsync(m => m.Id == userId);
+                if (user != null)
+                {
                     user.ImagePath = imagePath;
                     await userSvc.EditAsync(user);
                     return true;

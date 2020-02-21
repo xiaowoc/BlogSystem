@@ -12,11 +12,21 @@
                 <div>
                     @if (ViewBag.Category != null)
                     {
-                        <p class="text-muted h5">分类: <span class="badge badge-info">@ViewBag.Category.CategoryName</span></p>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/Home/UserDetails?id=@userInfo.Id">用户首页</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">分类: <span class="badge badge-info">@ViewBag.Category.CategoryName</span></li>
+                            </ol>
+                        </nav>
                     }
                     else
                     {
-                        <p class="text-muted h5">所有文章</p>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/Home/UserDetails?id=@userInfo.Id">用户首页</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">所有文章</li>
+                            </ol>
+                        </nav>
                     }
                 </div>
                 @if (Model.Count<BlogSystem.DTO.ArticleDto>() != 0)
@@ -201,7 +211,10 @@
                 }
             </div>
             <div class="whiteBlock">
-                <p>标签</p>
+                <p class="d-flex">
+                    <span>标签</span>
+                    <span class="ml-auto"><small><a class="text-muted" href="/Article/CategoryList?userId=@userInfo.Id">分类列表</a></small></span>
+                </p>
                 <div id="categoriesDiv">
                     @foreach (var item in ViewBag.TenTags)
                     {

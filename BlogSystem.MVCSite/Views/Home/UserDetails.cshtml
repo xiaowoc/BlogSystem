@@ -4,10 +4,12 @@
     ViewBag.Title = "用户详情";
     Layout = "~/Views/Shared/_Layout.cshtml";
     List<ArticleDto> topArticles = ViewBag.TopArticles;
+    bool isCurrentUser = ViewBag.IsCurrentUser;
 }
 
 <div class="container-xl">
     <div class="row">
+
         <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;z-index:100;">
             <div class="toast-header">
                 <strong class="mr-auto">提示</strong>
@@ -17,6 +19,34 @@
             </div>
             <div class="toast-body">
 
+            </div>
+        </div>
+
+        <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">更换头像</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body mx-auto">
+                        <img id="previewImg" class="rounded-circle" style="display:none" />
+                        <div class="text-center">
+                            <a class="text-decoration-none" href="javascript:void(0);" onclick='$("#previewFile").click()'>
+                                <img src="~/IconSvg/image.svg" class="myIcon" style="width:24px;height:24px;" />选择图片
+                            </a>
+                        </div>
+                        <form enctype="multipart/form-data" id="changeImageForm">
+                            <input type="file" name="file" id="previewFile" style="display:none" accept="image/png,image/jpg,image/jpeg" />
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                        <button type="button" onclick="ChangeImage()" class="btn btn-primary" data-dismiss="modal">提交</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -90,12 +120,19 @@
             </div>
         </div>
 
-        <div class="col-md-3 d-none d-md-block">
+        <div class="col-md-3">
             <div class="sticky-top">
                 <div class="whiteBlock text-center">
-                    <img class="rounded-circle m-2" style="width:88px;height:88px;border-radius:50%" src="~/Image/@Model.ImagePath" />
-                    <p class="m-2">@Model.Email</p>
-                    <p>@Model.Nickname</p>
+                    <div class="position-relative mx-auto my-2" style="width:88px;height:88px;">
+                        <img class="rounded-circle" id="img-avatar" style="width:88px;height:88px;" src="~/Image/@Model.ImagePath" />
+                        @if (isCurrentUser)
+                        {
+                            <a href="javascript:void(0);" id="avatar-cover" class="position-absolute text-decoration-none rounded-circle" style="width:88px;height:88px;left:0;line-height:88px;opacity:0;" data-toggle="modal" data-target=".bd-example-modal-lg">更换头像</a>
+                        }
+                    </div>
+                    <p class="my-2">@Model.Email</p>
+                    <p class="my-2" style="display:@(isCurrentUser?"none":"block");">@Model.Nickname</p>
+                    <input id="nickName" class="w-100 text-center my-2" type="text" placeholder="编辑昵称" value="@Model.Nickname" style="border-radius:4px;border:1px solid transparent;display:@(isCurrentUser?"block":"none");" maxlength="30">
                     <span class="badge badge-info">关注 @Model.FocusCount 人</span>
                     <span class="badge badge-info">粉丝 @Model.FansCount 人</span>
                     @if (ViewBag.IsFocused)//已关注
@@ -107,8 +144,55 @@
                         <a href="#" id="btnFocus" class="badge badge-danger">点我关注</a>
                     }
                 </div>
+                @if (isCurrentUser)
+                {
+                    <div class="whiteBlock">
+                        <p>更多操作</p>
+                        <a class="btn btn-outline-info" data-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1">修改密码</a>
+                        <div class="row">
+                            <div class="col">
+                                <div class="collapse multi-collapse" id="multiCollapseExample1">
+                                    <div class="card card-body">
+                                        <form novalidate="novalidate">
+                                            <div class="form-group">
+                                                <label class="control-label" for="OldPassword">旧密码</label>
+                                                <div>
+                                                    <input class="form-control text-box single-line password valid" data-val="true" data-val-length="字段 旧密码 必须是一个字符串，其最小长度为 6，最大长度为 50。" data-val-length-max="50" data-val-length-min="6" data-val-required="旧密码 字段是必需的。" id="OldPassword" name="OldPassword" type="password" aria-describedby="OldPassword-error" aria-invalid="false">
+                                                    <span class="text-danger field-validation-valid" data-valmsg-for="OldPassword" data-valmsg-replace="true"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="control-label" for="NewPassword">新密码</label>
+                                                <div>
+                                                    <input class="form-control text-box single-line password" data-val="true" data-val-length="字段 新密码 必须是一个字符串，其最小长度为 6，最大长度为 50。" data-val-length-max="50" data-val-length-min="6" data-val-required="新密码 字段是必需的。" id="NewPassword" name="NewPassword" type="password">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="NewPassword" data-valmsg-replace="true"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="control-label" for="ConfirmNewPassword">确认新密码</label>
+                                                <div>
+                                                    <input class="form-control text-box single-line password" data-val="true" data-val-equalto="“确认新密码”和“新密码”不匹配。" data-val-equalto-other="*.NewPassword" data-val-required="确认新密码 字段是必需的。" id="ConfirmNewPassword" name="ConfirmNewPassword" type="password">
+                                                    <span class="field-validation-valid text-danger" data-valmsg-for="ConfirmNewPassword" data-valmsg-replace="true"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <input type="button" onclick="ChangePassword()" value="提交" class="btn btn-info">
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
                 <div class="whiteBlock">
-                    <p>标签</p>
+                    <p class="d-flex">
+                        <span>标签</span>
+                        <span class="ml-auto"><small><a class="text-muted" href="/Article/CategoryList?userId=@Model.Id">分类列表</a></small></span>
+                    </p>
                     <div id="categoriesDiv">
                         @foreach (var item in ViewBag.TenTags)
                         {
@@ -135,20 +219,123 @@
     </div>
 </div>
 @section scripts{
+    @Scripts.Render("~/bundles/jqueryval")
     <script>
-        $(function () {//初始化绑定点击事件和hover事件
+        $(function () {
+            //初始化绑定点击事件和hover事件
             $("#btnFocus").on('click', function () {
                 $("#btnFocus").bind('click', FocusUser());
             });
             $("#btnunFocus").on('click', function () {
                 $("#btnunFocus").bind('click', UnFocusUser());
             });
+            //关注覆盖显示
             $("#btnunFocus").hover(function () {
                 $("#btnunFocus").text("取消关注");
-            },function () {
-                    $("#btnunFocus").text("√ 已关注");
+            }, function () {
+                $("#btnunFocus").text("√ 已关注");
+            });
+            //头像覆盖显示
+            $("#avatar-cover").hover(function () {
+                $("#avatar-cover").css({ "width": "88px", "height": "88px", "left": "0", "line-height": "88px", "color": "white", "background-color": "rgba(0,0,0,.6)", "opacity": "100" });
+            }, function () {
+                $("#avatar-cover").css({ "width": "88px", "height": "88px", "left": "0", "line-height": "88px", "opacity": "0" });
+            });
+            //昵称覆盖显示
+            $("#nickName").hover(function () {
+                $("#nickName").css({ "border": "1px solid green" });
+            }, function () {
+                $("#nickName").css({ "border-radius": "4px", "border": "1px solid transparent", "display": "@(isCurrentUser?"block":"none")" });
+            });
+            //昵称失去焦点提交
+            $("#nickName").blur(function () {
+                ChangeNickName($("#nickName").val());
+            });
+            //头像预览生成url
+            $('#previewFile').change(function () {
+                var file = $(this)[0].files[0];
+                //通过FileReader读取选中图片
+                var reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function () {
+                    //result中存放了选中的文件的二进制数据
+                    $("#previewImg").attr("src", this.result);
+                    $("#previewImg").css({"width":"200px","height":"200px","display":"block"});
+                }
             });
         })
+
+        function ChangePassword() {
+            oldPwd = $("#OldPassword").val();
+            newPwd = $("#NewPassword").val();
+            confirmNewPwd = $("#ConfirmNewPassword").val();
+            $.ajax({
+                url: "/Home/ChangePassword/",
+                dataType: "json",
+                data: { oldPwd,newPwd,confirmNewPwd },
+                type: "post",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                        $("#OldPassword").val('');//清空内容
+                        $("#NewPassword").val('');//清空内容
+                        $("#ConfirmNewPassword").val('');//清空内容
+                        //恢复collapse
+                        $("#multiCollapseExample1").collapse('hide');
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function ChangeNickName(nickName) {
+            $.ajax({
+                url: "/Home/ChangeNickName/",
+                dataType: "json",
+                data: { nickName },
+                type: "post",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        console.log('ok');
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function ChangeImage() {
+            var formData = new FormData($("#changeImageForm")[0]);
+            $.ajax({
+                url: "/Home/ChangeImage",
+                dataType: "json",
+                type: "post",
+                cache: false,
+                contentType: false,
+                processData: false,
+                data: formData,
+                xhr: function () {
+                    return $.ajaxSettings.xhr();
+                },
+                success: function (data) {
+                    if (data.status == "ok") {
+                        console.log("ok,new image path is" + data.path);
+                        $("#img-avatar").attr("src","/Image/"+data.path);
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                },
+            });
+        }
 
         function FocusUser() {
             var focusUserId = '@Model.Id';
