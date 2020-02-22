@@ -3,13 +3,14 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-    <div class="container body-content">
-        <div class="text-center">
-            <hr />
-            <p class="h3">出现内部错误</p>
-            <p class="h4">请联系QQ：501710163</p>
-            <span class="mt-3">
-                @Html.ActionLink("返回首页", "Index", "Home", new { }, new { @class = "btn btn-outline-secondary" })
-            </span>
+    <div class="container-xl body-content">
+        <div class="whiteBlock">
+            <div class="text-center">
+                <p class="h3">出现内部错误</p>
+                <p class="h4">请联系QQ：501710163</p>
+                <span class="mt-3">
+                    @Html.ActionLink("返回首页", "Index", "Home", new { }, new { @class = "btn btn-outline-secondary" })
+                </span>
+            </div>
         </div>
     </div>

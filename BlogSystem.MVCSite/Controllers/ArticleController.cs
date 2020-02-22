@@ -17,32 +17,85 @@ namespace BlogSystem.MVCSite.Controllers
     [BlogSystemAuth]
     public class ArticleController : Controller
     {
-        [HttpGet]
-        public ActionResult CreateCategory()
-        {
-            return View();
-        }
+        //[HttpGet]
+        //public ActionResult CreateCategory()
+        //{
+        //    return View();
+        //}
+
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public ActionResult CreateCategory(CreateCategoryViewModel model)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        Guid userId = Guid.Parse(Session["userId"].ToString());
+        //        IArticleManager articleManager = new ArticleManager();
+        //        articleManager.CreateCategory(model.CategoryName, userId);
+        //        return RedirectToAction("CategoryList", new { userId });
+        //    }
+        //    ModelState.AddModelError(string.Empty, "输入有误");
+        //    return View(model);
+        //}
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult CreateCategory(CreateCategoryViewModel model)
+        [AllowAnonymous]
+        public async Task<ActionResult> AddCategory(string categoryName)
         {
-            if (ModelState.IsValid)
+            //不可为空，不可重复,未登录无法提交
+            if (categoryName != null && categoryName.Trim() != "")
             {
-                Guid userId = Guid.Parse(Session["userId"].ToString());
+                //获取当前登陆的id，cookie的id需要解密
+                string userCookieId = ""; string message;
+                if (Request.Cookies["userId"] != null)
+                {
+                    if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                    {
+                        return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+                string userId = Session["userId"] == null ? userCookieId : Session["userId"].ToString();//优先获取session的id
+                if (userId == "")//未登录提醒
+                {
+                    return Json(new { status = "fail", result = "未登陆无法提交！" }, JsonRequestBehavior.AllowGet);
+                }
                 IArticleManager articleManager = new ArticleManager();
-                articleManager.CreateCategory(model.CategoryName, userId);
-                return RedirectToAction("CategoryList", new { userId });
+                List<BlogCategoryDto> categoryList = await articleManager.GetAllCategories(Guid.Parse(userId));//获取所有分类名，循环对比是否有重复
+                bool isRepeat = false;
+                foreach (var cate in categoryList)
+                {
+                    if (cate.BlogCategoryName == categoryName)
+                    {
+                        isRepeat = true;
+                        break;
+                    }
+                }
+                if (isRepeat)
+                {
+                    return Json(new { status = "fail", result = "添加的分类名称已存在，请勿重复添加！" }, JsonRequestBehavior.AllowGet);
+                }
+                await articleManager.CreateCategory(categoryName, Guid.Parse(userId));//添加分类
+                return Json(new { status = "ok", result = "添加成功！" }, JsonRequestBehavior.AllowGet);
             }
-            ModelState.AddModelError(string.Empty, "输入有误");
-            return View(model);
+            return Json(new { status = "fail", result = "分类名称不可为空！" }, JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult> CategoryList(string userId, int pageIndex = 1, int pageSize = 7)
         {
-            Guid currentUserId = Guid.Parse(Session["userId"].ToString());//获取当前登陆的id
-            if (userId == null)
+            //获取当前登陆的id，cookie的id需要解密
+            string userCookieId = ""; string message;
+            if (Request.Cookies["userId"] != null)
+            {
+                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                {
+                    ErrorController.message = message;
+                    return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+                }
+            }
+            string currentUserId = Session["userId"] == null ? userCookieId : Session["userId"].ToString();
+            if (userId == null && currentUserId != null && currentUserId.Trim() != "")
             {
                 return RedirectToAction(nameof(CategoryList), new { userId = currentUserId });
             }
@@ -59,8 +112,12 @@ namespace BlogSystem.MVCSite.Controllers
             var dataCount = await articleManager.GetCategoryDataCount(userIdGuid);//分类总数
             ViewBag.PageCount = dataCount % pageSize == 0 ? dataCount / pageSize : dataCount / pageSize + 1;//总页数
             ViewBag.PageIndex = pageIndex;//当前页数
-            ViewBag.IsCurrentUser = userIdGuid == currentUserId ? true : false;//是否为当前登陆用户
+            ViewBag.IsCurrentUser = currentUserId.Trim() == "" ? false : userIdGuid == Guid.Parse(currentUserId) ? true : false;//是否为当前登陆用户
+            ViewBag.IsFocused = currentUserId.Trim() == "" ? false : await userManager.IsFocused(Guid.Parse(currentUserId), userIdGuid);//id为空也视为没关注
             ViewBag.RequestId = userIdGuid;//当前请求id
+            ViewBag.User = await userManager.GetUserById(userIdGuid);
+            ViewBag.ArticlesCount = await articleManager.GetArticleDataCount(userIdGuid);//查找文章总数
+            ViewBag.CategoriesCount = await articleManager.GetCategoryDataCount(userIdGuid);//查找分类总数
             return View(categorys);
         }
 
@@ -88,10 +145,21 @@ namespace BlogSystem.MVCSite.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult> ArticleList(string userId, string categoryId = null, int pageIndex = 1, int pageSize = 7)
         {
-            Guid currentUserId = Guid.Parse(Session["userId"].ToString());//获取当前登陆的id
-            if (userId == null)
+            //获取当前登陆的id，cookie的id需要解密
+            string userCookieId = ""; string message;
+            if (Request.Cookies["userId"] != null)
+            {
+                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                {
+                    ErrorController.message = message;
+                    return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+                }
+            }
+            string currentUserId = Session["userId"] == null ? userCookieId : Session["userId"].ToString();
+            if (userId == null && currentUserId != null && currentUserId.Trim() != "")
             {
                 return RedirectToAction(nameof(ArticleList), new { userId = currentUserId });
             }
@@ -124,12 +192,12 @@ namespace BlogSystem.MVCSite.Controllers
             ViewBag.PageIndex = pageIndex;//当前页数
             ViewBag.PageSize = pageSize;//当前显示数目
             ViewBag.Category = categoryIdGuid == Guid.Empty ? null : await articleManager.GetOneCategoryById(categoryIdGuid);
-            ViewBag.IsCurrentUser = userIdGuid == currentUserId ? true : false;//是否为当前登陆用户
+            ViewBag.IsCurrentUser = currentUserId.Trim() == "" ? false : userIdGuid == Guid.Parse(currentUserId) ? true : false;//是否为当前登陆用户
             ViewBag.RequestId = userIdGuid;//当前请求id
             ViewBag.TenTags = await articleManager.GetCategoriesByCount(userIdGuid, 10);//返回10个分类
             ViewBag.ArticlesCount = await articleManager.GetArticleDataCount(userIdGuid);//查找文章总数
             ViewBag.CategoriesCount = await articleManager.GetCategoryDataCount(userIdGuid);//查找分类总数
-            ViewBag.IsFocused = currentUserId == Guid.Empty ? false : await userManager.IsFocused(currentUserId, userIdGuid);//id为空也视为没关注
+            ViewBag.IsFocused = currentUserId.Trim() == "" ? false : await userManager.IsFocused(Guid.Parse(currentUserId), userIdGuid);//id为空也视为没关注
             ViewBag.User = await userManager.GetUserById(userIdGuid);
             return View(articles);
         }
@@ -197,42 +265,42 @@ namespace BlogSystem.MVCSite.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<ActionResult> EditCategory(Guid? id)
-        {
-            //获取当前分类实体
-            IArticleManager articleManager = new ArticleManager();
-            if (id == null || !await articleManager.ExistsCategory(id.Value))//分类id找不到则跳转分类不存在错误页面
-            {
-                ErrorController.message = "未能找到对应ID的分类，请稍后再试";
-                return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
-            }
-            var data = await articleManager.GetOneCategoryById(id.Value);//要经过上面的判断否则会出错
-            Guid userId = Guid.Parse(Session["userId"].ToString());
-            if (data.UserId == userId)//文章作者才可编辑分类
-            {
-                //获取所有分类
-                ViewBag.Categories = await new ArticleManager().GetAllCategories(userId);
-                //将实体内容放进viewmodel中输出到前端
-                return View(new EditCategoryViewModel()
-                {
-                    Id = data.Id,
-                    CategoryName = data.CategoryName
-                });
-            }
-            else
-            {
-                if (data.UserId == Guid.Parse("00000000-0000-0000-0000-000000000001"))
-                {
-                    ErrorController.message = "系统内置分类不可进行编辑";
-                }
-                else
-                {
-                    ErrorController.message = "非本人分类不可进行编辑";
-                }
-                return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
-            }
-        }
+        //[HttpGet]
+        //public async Task<ActionResult> EditCategory(Guid? id)
+        //{
+        //    //获取当前分类实体
+        //    IArticleManager articleManager = new ArticleManager();
+        //    if (id == null || !await articleManager.ExistsCategory(id.Value))//分类id找不到则跳转分类不存在错误页面
+        //    {
+        //        ErrorController.message = "未能找到对应ID的分类，请稍后再试";
+        //        return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+        //    }
+        //    var data = await articleManager.GetOneCategoryById(id.Value);//要经过上面的判断否则会出错
+        //    Guid userId = Guid.Parse(Session["userId"].ToString());
+        //    if (data.UserId == userId)//文章作者才可编辑分类
+        //    {
+        //        //获取所有分类
+        //        ViewBag.Categories = await new ArticleManager().GetAllCategories(userId);
+        //        //将实体内容放进viewmodel中输出到前端
+        //        return View(new EditCategoryViewModel()
+        //        {
+        //            Id = data.Id,
+        //            CategoryName = data.CategoryName
+        //        });
+        //    }
+        //    else
+        //    {
+        //        if (data.UserId == Guid.Parse("00000000-0000-0000-0000-000000000001"))
+        //        {
+        //            ErrorController.message = "系统内置分类不可进行编辑";
+        //        }
+        //        else
+        //        {
+        //            ErrorController.message = "非本人分类不可进行编辑";
+        //        }
+        //        return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+        //    }
+        //}
 
         [HttpPost]
         [ValidateInput(false)]
@@ -268,50 +336,106 @@ namespace BlogSystem.MVCSite.Controllers
             }
         }
 
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<ActionResult> EditCategory(EditCategoryViewModel model)
+        //{
+        //    IArticleManager articleManager = new ArticleManager();
+        //    if (!await articleManager.ExistsCategory(model.Id))//分类id找不到则跳转分类不存在错误页面
+        //    {
+        //        ErrorController.message = "未能找到对应ID的分类，请稍后再试";
+        //        return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+        //    }
+        //    var data = await articleManager.GetOneCategoryById(model.Id);//要经过上面的判断否则会出错
+        //    Guid userId = Guid.Parse(Session["userId"].ToString());
+        //    if (data.UserId == userId)//分类作者才可编辑分类
+        //    {
+        //        if (ModelState.IsValid)
+        //        {
+        //            List<BlogCategoryDto> categories = await articleManager.GetAllCategories(userId);
+        //            foreach (BlogCategoryDto category in categories)
+        //            {
+        //                if (category.BlogCategoryName == model.CategoryName)//修改后的名字和现有的重复，则提示失败
+        //                {
+        //                    ModelState.AddModelError(string.Empty, "该名字已存在，请修改后重试！");
+        //                    return View(model);
+        //                }
+        //            }
+        //            await articleManager.EditCategory(model.Id, model.CategoryName);
+        //            return RedirectToAction("CategoryList", new { userId = userId });
+        //        }
+        //        else
+        //        {
+        //            return View(model);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (data.UserId == Guid.Parse("00000000-0000-0000-0000-000000000001"))
+        //        {
+        //            ErrorController.message = "系统内置分类不可进行编辑";
+        //        }
+        //        else
+        //        {
+        //            ErrorController.message = "非本人分类不可进行编辑";
+        //        }
+        //        return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+        //    }
+        //}
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> EditCategory(EditCategoryViewModel model)
+        [AllowAnonymous]
+        public async Task<ActionResult> EditCategory(Guid categoryId, string newCategoryName)
         {
-            IArticleManager articleManager = new ArticleManager();
-            if (!await articleManager.ExistsCategory(model.Id))//分类id找不到则跳转分类不存在错误页面
+            //未登陆、系统内置、重名、信息为空不可编辑
+            if (categoryId == null || newCategoryName == null || categoryId == Guid.Empty || newCategoryName.Trim() == "")
             {
-                ErrorController.message = "未能找到对应ID的分类，请稍后再试";
-                return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+                return Json(new { status = "fail", result = "提交的数据不完整，请重试！" }, JsonRequestBehavior.AllowGet);
             }
-            var data = await articleManager.GetOneCategoryById(model.Id);//要经过上面的判断否则会出错
-            Guid userId = Guid.Parse(Session["userId"].ToString());
-            if (data.UserId == userId)//分类作者才可编辑分类
+            //获取当前登陆的id，cookie的id需要解密
+            string userCookieId = ""; string message;
+            if (Request.Cookies["userId"] != null)
             {
-                if (ModelState.IsValid)
+                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
-                    List<BlogCategoryDto> categories = await articleManager.GetAllCategories(userId);
-                    foreach (BlogCategoryDto category in categories)
+                    return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            string userId = Session["userId"] == null ? userCookieId : Session["userId"].ToString();
+            if (userId.Trim() == "")
+            {
+                return Json(new { status = "fail", result = "还未登陆无法编辑" }, JsonRequestBehavior.AllowGet);
+            }
+            IArticleManager articleManager = new ArticleManager();
+            if (!await articleManager.ExistsCategory(categoryId))//分类id不存在
+            {
+                return Json(new { status = "fail", result = "未能找到对应ID的分类，请稍后再试" }, JsonRequestBehavior.AllowGet);
+            }
+            var data = await articleManager.GetOneCategoryById(categoryId);//要经过上面的判断否则会出错
+            if (data.UserId == Guid.Parse(userId))//分类作者才可编辑分类
+            {
+                //循环自己所有的分类，对比是否有重名
+                List<BlogCategoryDto> categories = await articleManager.GetAllCategories(Guid.Parse( userId));
+                foreach (BlogCategoryDto category in categories)
+                {
+                    if (category.BlogCategoryName ==newCategoryName)//修改后的名字和现有的重复，则提示失败
                     {
-                        if (category.BlogCategoryName == model.CategoryName)//修改后的名字和现有的重复，则提示失败
-                        {
-                            ModelState.AddModelError(string.Empty, "该名字已存在，请修改后重试！");
-                            return View(model);
-                        }
+                        return Json(new { status = "fail", result = "该名字已存在，请修改后重试！" }, JsonRequestBehavior.AllowGet);
                     }
-                    await articleManager.EditCategory(model.Id, model.CategoryName);
-                    return RedirectToAction("CategoryList", new { userId = userId });
                 }
-                else
-                {
-                    return View(model);
-                }
+                await articleManager.EditCategory(categoryId, newCategoryName);
+                return Json(new { status = "ok", result = "编辑成功！" }, JsonRequestBehavior.AllowGet);
             }
             else
             {
                 if (data.UserId == Guid.Parse("00000000-0000-0000-0000-000000000001"))
                 {
-                    ErrorController.message = "系统内置分类不可进行编辑";
+                    return Json(new { status = "fail", result = "系统内置分类不可进行编辑" }, JsonRequestBehavior.AllowGet);
                 }
                 else
                 {
-                    ErrorController.message = "非本人分类不可进行编辑";
+                    return Json(new { status = "fail", result = "非本人分类不可进行编辑" }, JsonRequestBehavior.AllowGet);
                 }
-                return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
             }
         }
 

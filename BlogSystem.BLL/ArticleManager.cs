@@ -264,11 +264,20 @@ namespace BlogSystem.BLL
             using (IBlogCategory blogCategorySvc = new BlogCategoryService())
             {
                 Guid allId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-                return await blogCategorySvc.GetAllByPageOrder(pageSize, pageIndex, m => m.UserId == userId || m.Id == allId, false).Select(m => new BlogCategoryDto()
+                var data = await blogCategorySvc.GetAllByPageOrder(pageSize, pageIndex, m => m.UserId == userId || m.Id == allId, false).Select(m => new BlogCategoryDto()
                 {
                     Id = m.Id,
-                    BlogCategoryName = m.CategoryName
+                    BlogCategoryName = m.CategoryName,
+                    CreateTime = m.CreatTime
                 }).ToListAsync();
+                using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
+                {
+                    foreach (var item in data)
+                    {
+                        item.ArticleCount = await articleToCategorySvc.GetAll().Where(m => m.BlogCategoryId == item.Id).CountAsync();
+                    }
+                }
+                return data;
             }
         }
 
@@ -407,7 +416,7 @@ namespace BlogSystem.BLL
                 List<ArticleToCategory> list = await articleToCategorySvc.GetAll().Where(m => m.ArticleId == articleId).ToListAsync();
                 foreach (var item in list)
                 {
-                    await articleToCategorySvc.DeleteAsync(item,false);
+                    await articleToCategorySvc.DeleteAsync(item, false);
                 }
                 await articleToCategorySvc.Save();
             }
@@ -494,17 +503,28 @@ namespace BlogSystem.BLL
         {
             using (IArticleService articleService = new ArticleService())
             {
-                return await articleService.GetAll().OrderByDescending(m => m.GoodCount).Include(m => m.User).Select(m => new ArticleDto()
+                var data = await articleService.GetAll().OrderByDescending(m => m.GoodCount).Include(m => m.User).Select(m => new ArticleDto()
                 {
                     Id = m.Id,
                     Title = m.Title,
                     Content = m.IntroContent,
                     CreateTime = m.CreatTime,
-                    //Email = m.User.Email,
+                    Email = m.User.Email,
                     imagePath = m.User.ImagePath,
-                    //GoodCount = m.GoodCount,
-                    //BadCount = m.BadCount
+                    GoodCount = m.GoodCount,
+                    BadCount = m.BadCount,
+                    userId=m.UserId
                 }).Take(count).ToListAsync();
+                using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
+                {
+                    foreach (var item in data)
+                    {
+                        var cates = await articleToCategorySvc.GetAll().Include(m => m.BlogCategory).Where(m => m.ArticleId == item.Id).ToListAsync();
+                        item.CategoryIds = cates.Select(m => m.BlogCategoryId).ToArray();
+                        item.CategoryNames = cates.Select(m => m.BlogCategory.CategoryName).ToArray();
+                    }
+                    return data;
+                }
             }
         }
 

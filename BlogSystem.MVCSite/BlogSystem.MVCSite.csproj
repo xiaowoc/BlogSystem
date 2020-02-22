@@ -166,6 +166,7 @@
   <ItemGroup>
     <Content Include="IconSvg\delete.svg" />
     <Content Include="IconSvg\edit.svg" />
+    <Content Include="IconSvg\flow.svg" />
     <Content Include="IconSvg\hate.svg" />
     <Content Include="IconSvg\blog.ico" />
     <Content Include="IconSvg\blog.png" />
@@ -183,6 +184,7 @@
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="IconSvg\image.svg" />
+    <Content Include="IconSvg\user.svg" />
     <Content Include="Image\default.png" />
     <Content Include="IconSvg\like.svg" />
     <Content Include="Scripts\bootstrap.bundle.js" />

@@ -30,29 +30,32 @@
                     {
                         <li class="nav-item">@Html.ActionLink("个人主页", "UserDetails", "Home", new { }, new { @class = "nav-link" })</li>
                     }
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarArticleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            文章
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarArticleDropdown">
-                            @Html.ActionLink("新建文章", "CreateArticle", "Article", new { }, new { @class = "dropdown-item" })
-                            @*@Html.ActionLink("文章列表", "ArticleList", "Article", new { }, new { @class = "dropdown-item" })*@
-                            <div class="dropdown-divider"></div>
-                            @Html.ActionLink("添加文章类型", "CreateCategory", "Article", new { }, new { @class = "dropdown-item" })
-                            @*@Html.ActionLink("文章类型列表", "CategoryList", "Article", new { }, new { @class = "dropdown-item" })*@
-                        </div>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            用户
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarUserDropdown">
-                            @*@Html.ActionLink("修改资料", "EditInfo", "Home", new { }, new { @class = "dropdown-item" })*@
-                            @Html.ActionLink("修改密码", "EditPwd", "Home", new { }, new { @class = "dropdown-item" })
-                            @*<div class="dropdown-divider"></div>
-                                @Html.ActionLink("添加文章类别", "CreateCategory", "Article", new { }, new { @class = "dropdown-item" })*@
-                        </div>
-                    </li>
+                    <li class="nav-item">@Html.ActionLink("写博客", "CreateArticle", "Article", new { }, new { @class = "nav-link" })</li>
+                    <li class="nav-item"><a href="javascript:void(0);" class="nav-link" data-toggle="modal" data-target=".bd-example-modal-normal">添加分类</a></li>
+                    @*<li class="nav-item">@Html.ActionLink("添加分类", "CreateCategory", "Article", new { }, new { @class = "nav-link" })</li>*@
+                    @*<li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarArticleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                文章
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarArticleDropdown">
+                                @Html.ActionLink("新建文章", "CreateArticle", "Article", new { }, new { @class = "dropdown-item" })
+                                @Html.ActionLink("文章列表", "ArticleList", "Article", new { }, new { @class = "dropdown-item" })
+                                <div class="dropdown-divider"></div>
+                                @Html.ActionLink("添加文章类型", "CreateCategory", "Article", new { }, new { @class = "dropdown-item" })
+                                @Html.ActionLink("文章类型列表", "CategoryList", "Article", new { }, new { @class = "dropdown-item" })
+                            </div>
+                        </li>*@
+                    @*<li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                用户
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarUserDropdown">
+                                @Html.ActionLink("修改资料", "EditInfo", "Home", new { }, new { @class = "dropdown-item" })
+                                @Html.ActionLink("修改密码", "EditPwd", "Home", new { }, new { @class = "dropdown-item" })
+                                <div class="dropdown-divider"></div>
+                                    @Html.ActionLink("添加文章类别", "CreateCategory", "Article", new { }, new { @class = "dropdown-item" })
+                            </div>
+                        </li>*@
                 </ul>
                 <form class="form-inline my-2 my-lg-0 ml-auto" action="/Home/Search" method="get">
                     <div class="input-group">
@@ -65,14 +68,14 @@
                 <ul class="navbar-nav mr-0">
                     @if (Session["userId"] == null && Request.Cookies["userId"] == null)
                     {
-                        <li class="nav-item">@Html.ActionLink("注册", "Register", "Home", new { }, new { @class = "nav-link" })</li>
+                        <li class="nav-item"><a href="javascript:void(0);" class="nav-link" data-toggle="modal" data-target=".modalRegister">注册</a></li>
                         <li class="nav-item">@Html.ActionLink("登陆", "Login", "Home", new { }, new { @class = "nav-link" })</li>
                     }
                     else
                     {
                         <li class="nav-item">
                             <form action="/Home/Logout" method="post">
-                                <button type="submit" class="nav-link btn btn-link py-0" style="width:auto">注销 @(Session["loginName"] == null ? Request.Cookies["loginName"].Value : Session["loginName"])</button>
+                                <button type="button" onclick="LogOut()" class="nav-link btn btn-link py-0" style="width:auto">注销 @(Session["loginName"] == null ? Request.Cookies["loginName"].Value : Session["loginName"])</button>
                             </form>
                         </li>
                     }
@@ -80,6 +83,90 @@
             </div>
         </div>
     </nav>
+
+    <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;z-index:100;">
+        <div class="toast-header">
+            <strong class="mr-auto">提示</strong>
+            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="toast-body">
+
+        </div>
+    </div>
+
+    <div class="modal fade bd-example-modal-normal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">添加分类</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <form action="/Article/CreateCategory" method="post" novalidate="novalidate">
+                        <div class="form-group">
+                            <label class="control-label" for="CategoryName">分类名称</label>
+                            <div>
+                                <input class="form-control text-box single-line" data-val="true" data-val-length="字段 分类名称 必须是一个字符串，其最小长度为 2，最大长度为 200。" data-val-length-max="200" data-val-length-min="2" data-val-required="分类名称 字段是必需的。" id="CategoryName" name="CategoryName" type="text" value="">
+                                <span class="field-validation-valid text-danger" data-valmsg-for="CategoryName" data-valmsg-replace="true"></span>
+                            </div>
+                        </div>
+                    </form>
+                    <p class="text-center"><small class="">添加成功后如果页面没显示，请刷新页面，请勿重复提交</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    <button type="button" onclick="AddCategory()" class="btn btn-success" data-dismiss="modal">提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Session["userId"] == null && Request.Cookies["userId"] == null)
+    {
+        //未登录时补充注册弹出框
+        <div class="modal fade modalRegister" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">注册</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/Home/Register" method="post" novalidate="novalidate">
+                            <div class="form-group">
+                                <label class="sr-only" for="Email">邮箱</label>
+                                <input class="form-control text-box single-line" data-val="true" data-val-email="邮箱 字段不是有效的电子邮件地址。" data-val-remote="“邮箱”无效。" data-val-remote-additionalfields="*.Email" data-val-remote-url="/Home/IsEmailInUse" data-val-required="邮箱 字段是必需的。" id="Email" name="Email" placeholder="邮箱" type="email" value="">
+                                <span class="field-validation-valid text-danger" data-valmsg-for="Email" data-valmsg-replace="true"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="sr-only" for="Password">密码</label>
+                                <input class="form-control text-box single-line password" data-val="true" data-val-length="字段 密码 必须是一个字符串，其最小长度为 6，最大长度为 50。" data-val-length-max="50" data-val-length-min="6" data-val-required="密码 字段是必需的。" id="Password" name="Password" placeholder="密码" type="password">
+                                <span class="field-validation-valid text-danger" data-valmsg-for="Password" data-valmsg-replace="true"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="sr-only" for="ConfirmPassword">确认密码</label>
+                                <input class="form-control text-box single-line password" data-val="true" data-val-equalto="“确认密码”和“密码”不匹配。" data-val-equalto-other="*.Password" data-val-required="确认密码 字段是必需的。" id="ConfirmPassword" name="ConfirmPassword" placeholder="确认密码" type="password">
+                                <span class="field-validation-valid text-danger" data-valmsg-for="ConfirmPassword" data-valmsg-replace="true"></span>
+                            </div>
+                            <p>已有账号？<a href="/Home/Login">立即登陆</a></p>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                        <button type="button" onclick="Register()" class="btn btn-success" data-dismiss="modal">提交</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
     @RenderBody()
     @*<footer class="footer py-3 bg-light">
             <div class="container-xl">
@@ -87,10 +174,84 @@
             </div>
         </footer>*@
     @RenderSection("scripts", required: false)
+    @*<script>
+            $(function () {
+                // 解决bootstrap下拉菜单第一次点击无反应问题
+                $('.dropdown-toggle').dropdown();
+            });
+        </script>*@
     <script>
+        function AddCategory() {
+            var categoryName = $("#CategoryName").val();
+            $.ajax({
+                url: "/Article/AddCategory/",
+                dataType: "json",
+                data: { categoryName },
+                type: "post",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                        $("#CategoryName").val('');//清空内容
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function LogOut() {
+            $.ajax({
+                url: "/Home/Logout/",
+                dataType: "json",
+                type: "post",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        location.reload();
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function Register() {
+            var email = $("#Email").val();
+            var password = $("#Password").val();
+            var confirmPassword = $("#ConfirmPassword").val();
+            $.ajax({
+                url: "/Home/Register/",
+                dataType: "json",
+                data: { email, password, confirmPassword },
+                type: "post",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                        $("#Email").val('');//清空内容
+                        $("#Password").val('');//清空内容
+                        $("#ConfirmPassword").val('');//清空内容
+                        location.reload();
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
         $(function () {
-            // 解决bootstrap下拉菜单第一次点击无反应问题
-            $('.dropdown-toggle').dropdown();
+            $(".toast").hide();
+        })
+        $(".toast").on('hidden.bs.toast', function () {
+            $(".toast").hide();
         });
     </script>
 </body>

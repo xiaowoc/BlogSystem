@@ -50,7 +50,7 @@ namespace BlogSystem.BLL
             }
         }
 
-         public async Task<bool> ChangeUserNickName(Guid userId, string nickName)
+        public async Task<bool> ChangeUserNickName(Guid userId, string nickName)
         {
             using (IUserService userSvc = new UserService())
             {
@@ -302,7 +302,7 @@ namespace BlogSystem.BLL
             }
         }
 
-        public async Task<string> ForgetPassword(string token, Guid userId,string email)
+        public async Task<string> ForgetPassword(string token, Guid userId, string email)
         {
             string modelError = null;
             using (IResetPasswordService resetPasswordSvc = new ResetPasswordService())
@@ -395,6 +395,23 @@ namespace BlogSystem.BLL
                     modelError = "token信息不正确";
                     return modelError;
                 }
+            }
+        }
+
+        public async Task<List<UserInformationDto>> GetFamousUser(int count)
+        {
+            using (IUserService userSvc = new UserService())
+            {
+                return await userSvc.GetAll().Where(m => m.Email != "all").OrderByDescending(m => m.FansCount).Select(m =>
+                      new UserInformationDto()
+                      {
+                          Id = m.Id,
+                          Email = m.Email,
+                          FansCount = m.FansCount,
+                          FocusCount = m.FocusCount,
+                          ImagePath = m.ImagePath,
+                          Nickname = m.Nickname
+                      }).Take(count).ToListAsync();
             }
         }
     }

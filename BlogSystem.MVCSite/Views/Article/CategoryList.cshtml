@@ -1,61 +1,90 @@
 ﻿@model IEnumerable<BlogSystem.DTO.BlogCategoryDto>
-
+@using BlogSystem.DTO
 @{
     ViewBag.Title = "文章类型列表";
+    UserInformationDto userInfo = ViewBag.User;
 }
-<div class="container body-content">
-    <hr />
-    <p>
-        @if (ViewBag.IsCurrentUser)
-        {
-            @Html.ActionLink("创建类型", "CreateCategory", "Article", new { }, new { @class = "btn btn-outline-secondary" })
-        }
-    </p>
-    <table class="table">
-        <thead class="thead-light">
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.BlogCategoryName)
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Count<BlogSystem.DTO.BlogCategoryDto>() != 0)
-            {
-                foreach (var item in Model)
-                {
-                    <tr id="@item.Id">
-                        <td>
-                            @Html.DisplayFor(modelItem => item.BlogCategoryName)
-                        </td>
-                        <td class="text-right">
-                            <div class="d-none" id="confirmDeleteSpan_@item.Id">
-                                <span>确认是否删除？</span>
-                                <button class="btn btn-danger btn-sm" type="button" onclick="DeleteCategory('@item.BlogCategoryName','@item.Id')">是</button>
-                                <a href="#" class="btn btn-secondary btn-sm" onclick="confirmDelete('@item.Id',false)">否</a>
+    <div class="container-xl">
+        <div class="row">
+
+            <div class="modal fade modalEditCategory" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">编辑分类</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form novalidate="novalidate">
+                                    <div class="form-group">
+                                        <label class="control-label" for="NewCategoryName">新分类名称</label>
+                                        <div >
+                                            <input class="form-control text-box single-line" data-val="true" data-val-length="字段 新分类名称 必须是一个字符串，其最小长度为 2，最大长度为 200。" data-val-length-max="200" data-val-length-min="2" data-val-required="新分类名称 字段是必需的。" id="NewCategoryName" name="NewCategoryName" type="text" value="">
+                                            <input type="hidden" name="CategoryId" id="CategoryId" value="" />
+                                            <span class="field-validation-valid text-danger" data-valmsg-for="NewCategoryName" data-valmsg-replace="true"></span>
+                                        </div>
+                                    </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" onclick="CloseEdit()" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                            <button type="button" onclick="EditCategory()" class="btn btn-success" data-dismiss="modal">提交</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div class="whiteBlock">
+                    <div>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/Home/UserDetails?id=@userInfo.Id">用户首页</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">所有分类</li>
+                            </ol>
+                        </nav>
+                    </div>
+
+                    @if (Model.Count<BlogSystem.DTO.BlogCategoryDto>() != 0)
+                    {
+                        foreach (var item in Model)
+                        {
+                            <div class="mt-3" id="@item.Id">
+                                <hr />
+                                <strong class="d-block h3">
+                                    <a href="/Article/ArticleList?userId=@ViewBag.RequestId&categoryId=@item.Id" class=" text-decoration-none">@item.BlogCategoryName</a>
+                                </strong>
+                                <div>
+                                    <span><img class="myIcon" src="/IconSvg/calendar.svg" title="创建日期" /> @item.CreateTime</span>
+                                    <span><img class="myIcon" src="/IconSvg/flow.svg" title="文章引用数量" />@item.ArticleCount</span>
+                                    @if (ViewBag.IsCurrentUser)
+                                    {
+                                        <a href="javascript:void(0);" onclick="OpenEdit('@item.Id','@item.BlogCategoryName')" data-toggle="modal" data-target=".modalEditCategory"><img class="myIcon" src="/IconSvg/edit.svg" title="编辑" /></a>
+                                    }
+                                    <div class="d-none" id="confirmDeleteSpan_@item.Id">
+                                        <span class="badge badge-warning">确认是否删除？</span>
+                                        <a href="javascript:void(0);" class="badge badge-danger" onclick="DeleteCategory('@item.BlogCategoryName','@item.Id')">是</a>
+                                        <a href="javascript:void(0);" class="badge badge-dark" onclick="confirmDelete('@item.Id',false)">否</a>
+                                    </div>
+                                    <div class="d-inline" id="deleteSpan_@item.Id">
+                                        @if (ViewBag.IsCurrentUser)
+                                        {
+                                            <a href="javascript:void(0);" onclick="confirmDelete('@item.Id',true)"><img class="myIcon" src="/IconSvg/delete.svg" title="删除" /></a>
+                                        }
+                                    </div>
+                                </div>
                             </div>
-                            <div class="d-inline" id="deleteSpan_@item.Id">
-                                @if (ViewBag.IsCurrentUser)
-                                {
-                                    @Html.ActionLink("编辑", "EditCategory", new { id = item.Id }, new { @class = "btn btn-outline-warning btn-sm" })
-                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete('@item.Id',true)">删除</button>
-                                }
-                            </div>
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr><td colspan="6" class="text-center">什么都没有哦</td></tr>
-            }
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="6">
-                    <nav>
-                        <ul class="pagination justify-content-center">
+                        }
+                    }
+                    else
+                    {
+                        <hr />
+                        <div class="text-center"><strong>什么都没有哦</strong></div>
+                    }
+                    <nav class="mt-3">
+                        <ul class="pagination">
                             @if (ViewBag.PageCount == 0 || ViewBag.PageCount == 1)
                             {
                             }
@@ -170,21 +199,43 @@
                             }
                         </ul>
                     </nav>
-                </td>
-            </tr>
-        </tfoot>
-    </table>
-    <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;">
-        <div class="toast-header">
-            <strong class="mr-auto">删除成功</strong>
-            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="toast-body">
+                </div>
+            </div>
+
+            <div class="col-md-3 d-none d-md-block">
+                <div class="sticky-top">
+                    <div class="whiteBlock text-center">
+                        <img class="rounded-circle m-2" style="width:88px;height:88px;border-radius:50%" src="~/Image/@userInfo.ImagePath" />
+                        <p class="m-2">@userInfo.Email</p>
+                        <p>@userInfo.Nickname</p>
+                        <span class="badge badge-info">关注 @userInfo.FocusCount 人</span>
+                        <span class="badge badge-info">粉丝 @userInfo.FansCount 人</span>
+                        @if (ViewBag.IsFocused)//已关注
+                        {
+                            <a href="javascript:void(0);" id="btnunFocus" class="badge badge-secondary">√ 已关注</a>
+                        }
+                        else//未关注
+                        {
+                            <a href="javascript:void(0);" id="btnFocus" class="badge badge-danger">点我关注</a>
+                        }
+                    </div>
+                    <div class="whiteBlock">
+                        <p>归档</p>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>文章总计</span>
+                                <span class="badge badge-pill badge-info ">@ViewBag.ArticlesCount</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>分类总计</span>
+                                <span class="badge badge-pill badge-info ">@ViewBag.CategoriesCount</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 @section scripts{
     <script>
         function confirmDelete(uniqueId, isDeleteClicked) {
@@ -220,9 +271,106 @@
             })
         }
 
+        function FocusUser() {
+            var focusUserId = '@userInfo.Id';
+            $.ajax({
+                url: "/Home/FocusUser/",
+                dataType: "json",
+                data: { focusUserId: focusUserId },
+                type: "post",
+                success: function (data) {
+                    $(".toast-body").text(data.result);
+                    $(".toast").toast('show');
+                    if (data.status == "ok") {
+                        $("#btnFocus").text('√ 已关注');//修改显示内容
+                        $("#btnFocus").attr('class', 'badge badge-secondary');//更换显示class
+                        $("#btnFocus").unbind();//取消绑定事件
+                        $("#btnFocus").attr('id', 'btnunFocus');//id修改
+                        $("#btnunFocus").hover(function () {//再给新id绑定hover事件
+                            $("#btnunFocus").text("取消关注");
+                        }, function () {
+                            $("#btnunFocus").text("√ 已关注");
+                        });
+                        $("#btnunFocus").on('click', function () {//再给新id绑定点击事件
+                            $("#btnunFocus").bind('click', UnFocusUser());
+                        });
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function UnFocusUser() {
+            var focusUserId = '@userInfo.Id';
+            $.ajax({
+                url: "/Home/UnFocusUser/",
+                dataType: "json",
+                data: { focusUserId: focusUserId },
+                type: "post",
+                success: function (data) {
+                    $(".toast-body").text(data.result);
+                    $(".toast").toast('show');
+                    if (data.status == "ok") {
+                        $("#btnunFocus").text('关注');
+                        $("#btnunFocus").attr('class', 'badge badge-danger');
+                        $("#btnunFocus").unbind();
+                        $("#btnunFocus").attr('id', 'btnFocus');
+                        $("#btnFocus").on('click', function () {
+                            $("#btnFocus").bind('click', FocusUser());
+                        });
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function EditCategory() {
+            var newCategoryName = $("#NewCategoryName").val();
+            var categoryId=$("#CategoryId").val();
+            $.ajax({
+                url: "/Article/EditCategory/",
+                type: "post",
+                data: { categoryId, newCategoryName },
+                dataType: "json",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                        location.reload();
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function OpenEdit(categoryId) {
+            $("#CategoryId").val(categoryId);
+        }
+
         $(function () {
             $(".toast").hide();
         })
+        $("#btnFocus").on('click', function () {
+                $("#btnFocus").bind('click', FocusUser());
+            });
+        $("#btnunFocus").on('click', function () {
+            $("#btnunFocus").bind('click', UnFocusUser());
+        });
+        $("#btnunFocus").hover(function () {
+            $("#btnunFocus").text("取消关注");
+        }, function () {
+            $("#btnunFocus").text("√ 已关注");
+        });
         $(".toast").on('hidden.bs.toast', function () {
             $(".toast").hide();
         });

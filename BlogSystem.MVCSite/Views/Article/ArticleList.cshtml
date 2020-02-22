@@ -195,60 +195,52 @@
         </div>
 
         <div class="col-md-3 d-none d-md-block">
-            <div class="whiteBlock text-center">
-                <img class="rounded-circle m-2" style="width:88px;height:88px;border-radius:50%" src="~/Image/@userInfo.ImagePath" />
-                <p class="m-2">@userInfo.Email</p>
-                <p>@userInfo.Nickname</p>
-                <span class="badge badge-info">关注 @userInfo.FocusCount 人</span>
-                <span class="badge badge-info">粉丝 @userInfo.FansCount 人</span>
-                @if (ViewBag.IsFocused)//已关注
-                {
-                    <a href="#" id="btnunFocus" class="badge badge-secondary">√ 已关注</a>
-                }
-                else//未关注
-                {
-                    <a href="#" id="btnFocus" class="badge badge-danger">点我关注</a>
-                }
-            </div>
-            <div class="whiteBlock">
-                <p class="d-flex">
-                    <span>标签</span>
-                    <span class="ml-auto"><small><a class="text-muted" href="/Article/CategoryList?userId=@userInfo.Id">分类列表</a></small></span>
-                </p>
-                <div id="categoriesDiv">
-                    @foreach (var item in ViewBag.TenTags)
+            <div class="sticky-top">
+                <div class="whiteBlock text-center">
+                    <img class="rounded-circle m-2" style="width:88px;height:88px;border-radius:50%" src="~/Image/@userInfo.ImagePath" />
+                    <p class="m-2">@userInfo.Email</p>
+                    <p>@userInfo.Nickname</p>
+                    <span class="badge badge-info">关注 @userInfo.FocusCount 人</span>
+                    <span class="badge badge-info">粉丝 @userInfo.FansCount 人</span>
+                    @if (ViewBag.IsFocused)//已关注
                     {
-                        <a href="/Article/ArticleList?userId=@ViewBag.RequestId&categoryId=@item.Id" class="badge badge-success mr-1">@item.BlogCategoryName</a>
+                        <a href="javascript:void(0);" id="btnunFocus" class="badge badge-secondary">√ 已关注</a>
                     }
-                    <a class="badge badge-info" href="javascript:void(0);" onclick="getMoreCategories('@userInfo.Id')">更多</a>
+                    else//未关注
+                    {
+                        <a href="javascript:void(0);" id="btnFocus" class="badge badge-danger">点我关注</a>
+                    }
                 </div>
-            </div>
-            <div class="whiteBlock">
-                <p>归档</p>
-                <ul class="list-group">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>文章总计</span>
-                        <span class="badge badge-pill badge-info ">@ViewBag.ArticlesCount</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>分类总计</span>
-                        <span class="badge badge-pill badge-info ">@ViewBag.CategoriesCount</span>
-                    </li>
-                </ul>
+                <div class="whiteBlock">
+                    <p class="d-flex">
+                        <span>标签</span>
+                        <span class="ml-auto"><small><a class="text-muted" href="/Article/CategoryList?userId=@userInfo.Id">分类列表</a></small></span>
+                    </p>
+                    <div id="categoriesDiv">
+                        @foreach (var item in ViewBag.TenTags)
+                        {
+                            <a href="/Article/ArticleList?userId=@ViewBag.RequestId&categoryId=@item.Id" class="badge badge-success mr-1">@item.BlogCategoryName</a>
+                        }
+                        <a class="badge badge-info" href="javascript:void(0);" onclick="getMoreCategories('@userInfo.Id')">更多</a>
+                    </div>
+                </div>
+                <div class="whiteBlock">
+                    <p>归档</p>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>文章总计</span>
+                            <span class="badge badge-pill badge-info ">@ViewBag.ArticlesCount</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>分类总计</span>
+                            <span class="badge badge-pill badge-info ">@ViewBag.CategoriesCount</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;z-index:100;">
-        <div class="toast-header">
-            <strong class="mr-auto">删除成功</strong>
-            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="toast-body">
-        </div>
-    </div>
 </div>
 @section scripts{
     <script>

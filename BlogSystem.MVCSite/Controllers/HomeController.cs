@@ -19,36 +19,67 @@ namespace BlogSystem.MVCSite.Controllers
         public async Task<ActionResult> Index()
         {
             IArticleManager articleManager = new ArticleManager();
-            return View(await articleManager.GetFamousArticle(3));
+            IUserManager userManager = new UserManager();
+            ViewBag.PopularUser = await userManager.GetFamousUser(20);
+            return View(await articleManager.GetFamousArticle(5));
         }
 
-        [HttpGet]
-        public ActionResult Register()
-        {
-            return View();
-        }
+        //[HttpGet]
+        //public ActionResult Register()
+        //{
+        //    return View();
+        //}
+
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<ActionResult> Register(RegisterViewModel model)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        IUserManager userManager = new UserManager();
+        //        var passWord = Md5Helper.Md5(model.Password);
+        //        if (await userManager.Register(model.Email, passWord))
+        //        {
+        //            ////注册成功后跳转登陆
+        //            //Response.Write("<script>alert('注册成功');location.href='/Home/Login';</script>");
+        //            //注册成功后自动登陆
+        //            var user = await userManager.GetUserByEmail(model.Email);
+        //            Session["loginName"] = user.Email;//将邮箱地址存进session
+        //            Session["userId"] = user.Id;//将用户id存进session
+        //            Response.Write("<script>alert('注册成功');location.href='/Home/Login';</script>");
+        //        }
+        //    }
+        //    ModelState.AddModelError(string.Empty, "注册失败");
+        //    return View(model);
+        //}
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Register(RegisterViewModel model)
+        public async Task<ActionResult> Register(string email, string password, string confirmPassword)
         {
-            if (ModelState.IsValid)
+            //不可为空，邮箱不可重复，密码验证正确
+            if (email != null && password != null && confirmPassword != null && email.Trim() != "" && password.Trim() != "" && confirmPassword.Trim() != "")
             {
-                IUserManager userManager = new UserManager();
-                var passWord = Md5Helper.Md5(model.Password);
-                if (await userManager.Register(model.Email, passWord))
+                if (password!=confirmPassword)
                 {
-                    ////注册成功后跳转登陆
-                    //Response.Write("<script>alert('注册成功');location.href='/Home/Login';</script>");
+                    return Json(new { status = "fail", result = "两次输入的密码不一致！" }, JsonRequestBehavior.AllowGet);
+                }
+                IUserManager userManager = new UserManager();
+                UserInformationDto user = await userManager.GetUserByEmail(email);
+                if (user!=null)//已经有人使用了该邮箱
+                {
+                    return Json(new { status = "fail", result = "该邮箱已被使用！" }, JsonRequestBehavior.AllowGet);
+                }        
+                var passWord = Md5Helper.Md5(confirmPassword);
+                if (await userManager.Register(email, passWord))
+                {
                     //注册成功后自动登陆
-                    var user = await userManager.GetUserByEmail(model.Email);
-                    Session["loginName"] = user.Email;//将邮箱地址存进session
-                    Session["userId"] = user.Id;//将用户id存进session
-                    Response.Write("<script>alert('注册成功');location.href='/Home/Login';</script>");
+                    var registerUser = await userManager.GetUserByEmail(email);
+                    Session["loginName"] = registerUser.Email;//将邮箱地址存进session
+                    Session["userId"] = registerUser.Id;//将用户id存进session
+                    return Json(new { status = "ok", result = "注册成功！" }, JsonRequestBehavior.AllowGet);
                 }
             }
-            ModelState.AddModelError(string.Empty, "注册失败");
-            return View(model);
+            return Json(new { status="fail",result="提交的数据不完整，请重试！"},JsonRequestBehavior.AllowGet);
         }
 
         [AcceptVerbs("Get", "Post")]
@@ -140,7 +171,7 @@ namespace BlogSystem.MVCSite.Controllers
             {
                 Response.Cookies[Request.Cookies[i].Name].Expires = DateTime.Now.AddDays(-1);
             }
-            return RedirectToAction(nameof(Index));
+            return Json(new { status = "ok" }, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
@@ -183,33 +214,33 @@ namespace BlogSystem.MVCSite.Controllers
             }
         }
 
-        [HttpGet]
-        [BlogSystemAuth]
-        public ActionResult EditPwd()
-        {
-            return View(new EditPwdViewModel() { Email = Session["loginName"].ToString() });
-        }
+        //[HttpGet]
+        //[BlogSystemAuth]
+        //public ActionResult EditPwd()
+        //{
+        //    return View(new EditPwdViewModel() { Email = Session["loginName"].ToString() });
+        //}
 
-        [HttpPost]
-        [BlogSystemAuth]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> EditPwd(EditPwdViewModel model)
-        {
-            string email = Session["loginName"].ToString();
-            Guid userId = Guid.Parse(Session["userId"].ToString());
-            if (ModelState.IsValid)
-            {
-                IUserManager userManager = new UserManager();
-                if (await userManager.ChangePassword(userId, model.OldPassword, model.ConfirmNewPassword))
-                {
-                    Response.Write("<script>alert('密码修改成功');location.href='/Home/Index';</script>");
-                    //return RedirectToAction(nameof(Index));
-                }
-            }
-            ModelState.AddModelError(string.Empty, "修改失败");
-            model.Email = email;
-            return View(model);
-        }
+        //[HttpPost]
+        //[BlogSystemAuth]
+        //[ValidateAntiForgeryToken]
+        //public async Task<ActionResult> EditPwd(EditPwdViewModel model)
+        //{
+        //    string email = Session["loginName"].ToString();
+        //    Guid userId = Guid.Parse(Session["userId"].ToString());
+        //    if (ModelState.IsValid)
+        //    {
+        //        IUserManager userManager = new UserManager();
+        //        if (await userManager.ChangePassword(userId, model.OldPassword, model.ConfirmNewPassword))
+        //        {
+        //            Response.Write("<script>alert('密码修改成功');location.href='/Home/Index';</script>");
+        //            //return RedirectToAction(nameof(Index));
+        //        }
+        //    }
+        //    ModelState.AddModelError(string.Empty, "修改失败");
+        //    model.Email = email;
+        //    return View(model);
+        //}
 
         //[HttpGet]
         //[BlogSystemAuth]
@@ -314,10 +345,20 @@ namespace BlogSystem.MVCSite.Controllers
         [HttpGet]
         public async Task<ActionResult> UserDetails(Guid? id)
         {
-            var currentUserId = Session["userId"];//获取当前登陆的id
-            if (id == null && currentUserId != null)
+            //获取当前登陆的id，cookie的id需要解密
+            string userCookieId = ""; string message;
+            if (Request.Cookies["userId"] != null)
             {
-                return RedirectToAction(nameof(UserDetails), new { id = currentUserId.ToString() });
+                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                {
+                    ErrorController.message = message;
+                    return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+                }
+            }
+            string userId = Session["userId"] == null ? userCookieId : Session["userId"].ToString();
+            if (id == null && userId != null && userId.Trim() != "")
+            {
+                return RedirectToAction(nameof(UserDetails), new { id = userId });
             }
             IUserManager userManager = new UserManager();
             if (id == null || !await userManager.ExistsUser(id.Value))
@@ -331,19 +372,8 @@ namespace BlogSystem.MVCSite.Controllers
             ViewBag.TopArticles = await articleManager.GetCurrentUserLatestArticle(100, id.Value, true);//选取100篇最新发布的置顶文章(不足100取找到的最大值)
             ViewBag.ArticlesCount = await articleManager.GetArticleDataCount(user.Id);//查找文章总数
             ViewBag.CategoriesCount = await articleManager.GetCategoryDataCount(user.Id);//查找分类总数
-            //获取当前登陆的id，cookie的id需要解密
-            string userId = ""; string message;
-            if (Request.Cookies["userId"] != null)
-            {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userId, out message))
-                {
-                    ErrorController.message = message;
-                    return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
-                }
-            }
-            string userid = Session["userId"] == null ? userId : Session["userId"].ToString();
-            ViewBag.IsFocused = userid == "" ? false : await userManager.IsFocused(Guid.Parse(userid), id.Value);//id为空也视为没关注
-            ViewBag.IsCurrentUser = userid == "" ? false : Guid.Parse(userid) == id.Value ? true : false;//是否为当前登陆用户
+            ViewBag.IsFocused = userId == "" ? false : await userManager.IsFocused(Guid.Parse(userId), id.Value);//id为空也视为没关注
+            ViewBag.IsCurrentUser = userId == "" ? false : Guid.Parse(userId) == id.Value ? true : false;//是否为当前登陆用户
             ViewBag.TenTags = await articleManager.GetCategoriesByCount(id.Value, 10);//返回10个分类
             return View(user);
         }
