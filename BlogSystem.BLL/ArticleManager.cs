@@ -89,17 +89,17 @@ namespace BlogSystem.BLL
             }
         }
 
-        public async Task CreateArticle(string title, string content, Guid[] categoryIds, Guid userId)
+        public async Task<Guid> CreateArticle(string title, string content, string introContent, Guid[] categoryIds, Guid userId)
         {
             using (IArticleService articleSvc = new ArticleService())
             {
-                //处理内容
-                string IntroContent = FilterHTML(content);
+                ////处理内容
+                //string IntroContent = FilterHTML(content);
                 Article article = new Article()
                 {
                     Title = title,
                     Content = content,
-                    IntroContent = IntroContent,
+                    IntroContent = introContent,
                     UserId = userId,
                     IsTop = categoryIds != null ? categoryIds.Contains(Guid.Parse("00000000-0000-0000-0000-000000000001")) : false
                 };
@@ -120,6 +120,7 @@ namespace BlogSystem.BLL
                     }
                     await articleToCategorySvc.Save();
                 }
+                return articleId;
             }
         }
 
@@ -513,7 +514,7 @@ namespace BlogSystem.BLL
                     imagePath = m.User.ImagePath,
                     GoodCount = m.GoodCount,
                     BadCount = m.BadCount,
-                    userId=m.UserId
+                    userId = m.UserId
                 }).Take(count).ToListAsync();
                 using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
                 {

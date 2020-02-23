@@ -122,27 +122,81 @@ namespace BlogSystem.MVCSite.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> CreateArticle()
+        [AllowAnonymous]
+        public ActionResult CreateArticle()
         {
-            var userId = Guid.Parse(Session["userId"].ToString());
-            ViewBag.Categories = await new ArticleManager().GetAllCategories(userId);
+            //获取当前登陆的id，cookie的id需要解密
+            string userCookieId = ""; string message;
+            if (Request.Cookies["userId"] != null)
+            {
+                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                {
+                    ErrorController.message = message;
+                    return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
+                }
+            }
+            string userId = Session["userId"] == null ? userCookieId : Session["userId"].ToString();
+            ViewBag.UserId = userId;
             return View();
         }
 
         [HttpPost]
-        [ValidateInput(false)]
-        public async Task<ActionResult> CreateArticle(CreateArticleViewModel model)
+        [AllowAnonymous]
+        public async Task<ActionResult> AddArticle(string title, string content, string introContent, Guid[] categoryIds)
         {
-            var userId = Guid.Parse(Session["userId"].ToString());
-            if (ModelState.IsValid)
+            //未登录、内容不为空、标题不为空、分类id不属于自己
+            if (title == null || content == null || title.Trim() == "" || content.Trim() == "" || categoryIds == null || categoryIds.Length == 0)//提交的信息为空
             {
-                await new ArticleManager().CreateArticle(model.Title, model.Content, model.CategoryIds, userId);
-                return RedirectToAction("ArticleList", new { userId });
+                return Json(new { status = "fail", result = "提交的信息不完整，请重试" }, JsonRequestBehavior.AllowGet);//返回错误信息
             }
-            ViewBag.Categories = await new ArticleManager().GetAllCategories(userId);
-            ModelState.AddModelError(string.Empty, "添加失败");
-            return View(model);
+            //获取当前登陆的id，cookie的id需要解密
+            string userCookieId = ""; string message;
+            if (Request.Cookies["userId"] != null)
+            {
+                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                {
+                    ErrorController.message = message;
+                    return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);//返回错误信息
+                }
+            }
+            string userId = Session["userId"] == null ? userCookieId : Session["userId"].ToString();
+            if (userId == null || userId.Trim() == "")//用户未登录
+            {
+                return Json(new { status = "fail", result = "获取不到用户信息，请检查登陆状态" }, JsonRequestBehavior.AllowGet);//返回错误信息
+            }
+            //循环自己所有的分类，对比是否正确
+            IArticleManager articleManager = new ArticleManager();
+            List<BlogCategoryDto> categoryDtoes = await articleManager.GetAllCategories(Guid.Parse(userId));//获取分类对象集合
+            List<Guid> currentUserCategoryIds = new List<Guid>();//将分类对象中的分类id整合进一个集合中
+            foreach (BlogCategoryDto category in categoryDtoes)
+            {
+                currentUserCategoryIds.Add(category.Id);
+            }
+            for (int i = 0; i < categoryIds.Length; i++)//循环检查提交的分类id是否和自身的分类id有对应
+            {
+                if (!currentUserCategoryIds.Contains(categoryIds[i]))//如果提交的分类id与自身的分类id没有匹配项，提示错误
+                {
+                    return Json(new { status = "fail", result = "提交的分类与用户所拥有的分类不匹配，请重试！" }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            Guid articleId = await articleManager.CreateArticle(title, content, introContent, categoryIds, Guid.Parse(userId));
+            return Json(new { status = "ok", result = "提交成功！", articleId },JsonRequestBehavior.AllowGet);
         }
+
+        //[HttpPost]
+        //[ValidateInput(false)]
+        //public async Task<ActionResult> CreateArticle(CreateArticleViewModel model)
+        //{
+        //    var userId = Guid.Parse(Session["userId"].ToString());
+        //    if (ModelState.IsValid)
+        //    {
+        //        await new ArticleManager().CreateArticle(model.Title, model.Content, model.CategoryIds, userId);
+        //        return RedirectToAction("ArticleList", new { userId });
+        //    }
+        //    ViewBag.Categories = await new ArticleManager().GetAllCategories(userId);
+        //    ModelState.AddModelError(string.Empty, "添加失败");
+        //    return View(model);
+        //}
 
         [HttpGet]
         [AllowAnonymous]
@@ -164,7 +218,7 @@ namespace BlogSystem.MVCSite.Controllers
                 return RedirectToAction(nameof(ArticleList), new { userId = currentUserId });
             }
             //需要返回前端 总页数 当前页数 单个页面数量 
-            var articleManager = new ArticleManager();
+            IArticleManager articleManager = new ArticleManager();
             IUserManager userManager = new UserManager();
             Guid userIdGuid;
             Guid.TryParse(userId, out userIdGuid);
@@ -215,12 +269,9 @@ namespace BlogSystem.MVCSite.Controllers
             ArticleDto data = await articleManager.GetOneArticleById(id.Value);
             var userManager = new UserManager();
             UserInformationDto user = await userManager.GetUserById(data.userId);
-            //查找用户粉丝数
-            ViewBag.FansCount = user.FansCount;
-            //用户id
-            ViewBag.UserId = user.Id;
-            //查找文章总数
-            ViewBag.ArticleCount = await articleManager.GetArticleDataCount(user.Id);
+            ViewBag.User = user;
+            ViewBag.ArticlesCount = await articleManager.GetArticleDataCount(user.Id);//查找文章总数
+            ViewBag.CategoriesCount = await articleManager.GetCategoryDataCount(user.Id);//查找分类总数
             //查询是否已经关注
             string userid = ""; string message;
             if (Request.Cookies["userId"] != null)
@@ -229,6 +280,7 @@ namespace BlogSystem.MVCSite.Controllers
             }
             string userId = Session["userId"] == null ? userid : Session["userId"].ToString();
             ViewBag.IsFocused = userId == "" ? false : await userManager.IsFocused(Guid.Parse(userId), user.Id);//id为空也视为没关注
+            ViewBag.TenTags = await articleManager.GetCategoriesByCount(user.Id, 10);//返回10个分类
             return View(data);
         }
 
@@ -415,10 +467,10 @@ namespace BlogSystem.MVCSite.Controllers
             if (data.UserId == Guid.Parse(userId))//分类作者才可编辑分类
             {
                 //循环自己所有的分类，对比是否有重名
-                List<BlogCategoryDto> categories = await articleManager.GetAllCategories(Guid.Parse( userId));
+                List<BlogCategoryDto> categories = await articleManager.GetAllCategories(Guid.Parse(userId));
                 foreach (BlogCategoryDto category in categories)
                 {
-                    if (category.BlogCategoryName ==newCategoryName)//修改后的名字和现有的重复，则提示失败
+                    if (category.BlogCategoryName == newCategoryName)//修改后的名字和现有的重复，则提示失败
                     {
                         return Json(new { status = "fail", result = "该名字已存在，请修改后重试！" }, JsonRequestBehavior.AllowGet);
                     }
@@ -632,7 +684,7 @@ namespace BlogSystem.MVCSite.Controllers
             IUserManager userManager = new UserManager();
             if (userId == null || !await userManager.ExistsUser(userId.Value))
             {
-                return Json(new { status = "fail", result = "获取所有分类失败，请稍后再试" }, JsonRequestBehavior.AllowGet);
+                return Json(new { status = "fail", result = "获取用户信息失败，请检查登陆状态！" }, JsonRequestBehavior.AllowGet);
             }
             var articleManager = new ArticleManager();
             List<BlogCategoryDto> data = await articleManager.GetAllCategories(userId.Value);

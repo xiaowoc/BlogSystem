@@ -34,6 +34,18 @@ a, .btn-link {
     margin-top: -3px;
 }
 
+.vh-85 {
+    height: 85vh;
+}
+
+.vh-65 {
+    height: 65vh;
+}
+
+.max-vh-65 {
+    max-height: 65vh;
+}
+
 /* Set width on the form input elements since they're 100% wide by default 
 input,
 select,

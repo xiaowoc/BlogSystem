@@ -10,7 +10,7 @@ namespace BlogSystem.IBLL
 {
     public interface IArticleManager
     {
-        Task CreateArticle(string title, string content, Guid[] categroyIds, Guid userId);
+        Task<Guid> CreateArticle(string title, string content, string introContent,Guid[] categroyIds, Guid userId);
 
         Task CreateCategory(string name, Guid userId);
 

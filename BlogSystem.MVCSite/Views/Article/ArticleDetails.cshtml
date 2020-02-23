@@ -2,89 +2,117 @@
 @using BlogSystem.DTO
 @{
     ViewBag.Title = "文章详情";
+    UserInformationDto userInfo = ViewBag.User;
 }
-<div class="container body-content mt-4">
-    <div>
-        <div>
-            <h1> @Html.DisplayFor(model => model.Title)</h1>
-        </div>
-        <div>
-            <a href="/Home/UserDetails/@ViewBag.UserId" class="mr-3 text-decoration-none"> @Html.DisplayFor(model => model.Email)</a>
-            <span class="text-muted mr-3">发布于 @Html.DisplayFor(model => model.CreateTime)</span>
-            <span class="text-muted">
-                @if (Model.CategoryNames.Length == 0)
-                {
-                    <span class="text-black-50">暂无分类</span>
-                }
-                else
-                {
-                    foreach (var item in Model.CategoryNames)
+<div class="container-xl">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="whiteBlock">
+                <div>
+                    <h1> @Html.DisplayFor(model => model.Title)</h1>
+                </div>
+                <div>
+                    <span>
+                        <a href="/Home/UserDetails/@userInfo.Id" class="mr-3 text-decoration-none">
+                            <img src="~/IconSvg/user.svg" title="用户" class="myIcon" /> @Html.DisplayFor(model => model.Email)
+                        </a>
+                    </span>
+                    <span class="text-muted mr-3">
+                        <img src="~/IconSvg/calendar.svg" title="创建时间" class="myIcon" /> @Html.DisplayFor(model => model.CreateTime)
+                    </span>
+                    @if (Model.CategoryNames.Length == 0)
                     {
-                        @(item + "    ")
+                        <span class="text-black-50">暂无分类</span>
                     }
-                }
-            </span>
-        </div>
-        <hr />
-        <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;">
-            <div class="toast-header">
-                <strong class="mr-auto">提示</strong>
-                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                    else
+                    {
+                        for (int i = 0; i < Model.CategoryNames.Length; i++)
+                        {
+                            <a href="/Article/ArticleList?userId=@userInfo.Id&categoryId=@Model.CategoryIds[i]" class="badge badge-success mr-1">@Model.CategoryNames[i]</a>
+                        }
+                    }
+                </div>
+                <hr />
+                <div>
+                    @Html.Raw(Model.Content)
+                </div>
+                <button class="btn btn-outline-white pl-0" id="btnLike" title="喜欢" onclick="BtnGoodHandle(this)">
+                    <img src="~/IconSvg/like.svg" /><span id="like">@Model.GoodCount</span>
+                </button>
+                <button class="btn btn-outline-white pl-0" id="btnHate" title="不喜欢" onclick="BtnBadHandle(this)">
+                    <img src="~/IconSvg/hate.svg" /><span id="hate">@Model.BadCount</span>
                 </button>
             </div>
-            <div class="toast-body">
+            <div class="whiteBlock">
+                <h3 class="my-3">评论</h3>
+                <div class="input-group mb-3">
+                    <input type="text" class="col-12 form-control" placeholder="请自觉遵守互联网相关的政策法规，严禁发布色情、暴力、反动的言论。" name="txtComment" id="txtComment" value="" />
+                    <div class="input-group-append">
+                        <button onclick="AddComment()" name="btnComment" id="btnComment" class="btn btn-outline-primary" data-container="body" data-toggle="popover" data-placement="top">发表评论</button>
+                    </div>
+                </div>
 
+                <ul id="comments" class="list-group list-group-flush">
+                </ul>
+                <nav class="mt-3 d-flex justify-content-center">
+                    <ul class="pagination" id="pagination">
+                        <li class="page-item" id="itemPrev">
+                            <a href="#info" class="page-link" id="linkPrev">上一页</a>
+                        </li>
+                        <li class="page-item" id="itemNext">
+                            <a href="#info" class="page-link" id="linkNext">下一页</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
-        <div>
-            @Html.Raw(Model.Content)
-        </div>
-        <button class="btn btn-outline-white pl-0" id="btnLike" onclick="BtnGoodHandle(this)">🙂<span id="like">@Model.GoodCount</span></button>
-        <button class="btn btn-outline-white pl-0" id="btnHate" onclick="BtnBadHandle(this)">😟<span id="hate">@Model.BadCount</span></button>
-        <hr />
-        <div class="d-flex mb-3" id="info">
-            <div class="py-2 pr-2">
-                <a href="/Home/UserDetails/@ViewBag.UserId"><img class="border" style="width:48px;height:48px;border-radius:50%" src="~/Image/@Html.DisplayFor(model => model.imagePath)" /></a>
-            </div>
-            <div class="p-2">
-                <span><a href="/Home/UserDetails/@ViewBag.UserId" class="text-decoration-none text-dark">@Html.DisplayFor(model => model.Email)</a></span>
-                <apan class="d-block"><small class="text-muted">发了 @ViewBag.ArticleCount 篇文章·粉丝 @ViewBag.FansCount </small></apan>
-            </div>
-            <div class="ml-auto p-2">
-                @if (ViewBag.IsFocused)//已关注
-                {
-                    <button id="btnunFocus" type="button" class="btn btn-outline-secondary">√ 已关注</button>
-                }
-                else//未关注
-                {
-                    <button id="btnFocus" type="button" class="btn btn-outline-danger">关注</button>
-                }
+
+        <div class="col-md-3">
+            <div class="sticky-top">
+                <div class="whiteBlock text-center">
+                    <img class="rounded-circle m-2" style="width:88px;height:88px;border-radius:50%" src="~/Image/@userInfo.ImagePath" />
+                    <p class="m-2">@userInfo.Email</p>
+                    <p>@userInfo.Nickname</p>
+                    <span class="badge badge-info">关注 @userInfo.FocusCount 人</span>
+                    <span class="badge badge-info">粉丝 @userInfo.FansCount 人</span>
+                    @if (ViewBag.IsFocused)//已关注
+                    {
+                        <a href="javascript:void(0);" id="btnunFocus" class="badge badge-secondary">√ 已关注</a>
+                    }
+                    else//未关注
+                    {
+                        <a href="javascript:void(0);" id="btnFocus" class="badge badge-danger">点我关注</a>
+                    }
+                </div>
+                <div class="whiteBlock">
+                    <p class="d-flex">
+                        <span>标签</span>
+                        <span class="ml-auto"><small><a class="text-muted" href="/Article/CategoryList?userId=@userInfo.Id">分类列表</a></small></span>
+                    </p>
+                    <div id="categoriesDiv">
+                        @foreach (var item in ViewBag.TenTags)
+                        {
+                            <a href="/Article/ArticleList?userId=@userInfo.Id&categoryId=@item.Id" class="badge badge-success mr-1">@item.BlogCategoryName</a>
+                        }
+                        <a class="badge badge-info" href="javascript:void(0);" onclick="getMoreCategories('@userInfo.Id')">更多</a>
+                    </div>
+                </div>
+                <div class="whiteBlock">
+                    <p>归档</p>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>文章总计</span>
+                            <span class="badge badge-pill badge-info ">@ViewBag.ArticlesCount</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>分类总计</span>
+                            <span class="badge badge-pill badge-info ">@ViewBag.CategoriesCount</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
-    <h3 class="my-3">评论</h3>
-    <div class="input-group mb-3">
-        <img class="border mr-1" style="width:38px;height:38px;border-radius:50%" src="~/Image/@Html.DisplayFor(model => model.imagePath)" />
-        <input type="text" class="col-12 form-control" placeholder="请自觉遵守互联网相关的政策法规，严禁发布色情、暴力、反动的言论。" name="txtComment" id="txtComment" value="" />
-        <div class="input-group-append">
-            <button onclick="AddComment()" name="btnComment" id="btnComment" class="btn btn-outline-primary" data-container="body" data-toggle="popover" data-placement="top">发表评论</button>
-        </div>
-    </div>
-
-    <ul id="comments" class="list-group list-group-flush">
-    </ul>
-    <nav class="mt-3 d-flex justify-content-center">
-        <ul class="pagination" id="pagination">
-            <li class="page-item" id="itemPrev">
-                <a href="#info" class="page-link" id="linkPrev">上一页</a>
-            </li>
-            <li class="page-item" id="itemNext">
-                <a href="#info" class="page-link" id="linkNext">下一页</a>
-            </li>
-        </ul>
-    </nav>
-
 </div>
 @section headers{
     <style>
@@ -121,20 +149,12 @@
                 $("#btnComment").attr("class", "btn btn-outline-primary");
             });
 
-            //---------------------------------------------------------
-
-            $(".toast").hide();
-
             //--------------------------------------------------------
 
             GetComments(1, 10);//获取评论 第一页 十条数据
 
             GetLikeHate();//查看是否已经点赞
         })
-
-         $(".toast").on('hidden.bs.toast', function () {
-            $(".toast").hide();
-         });
 
         function GetLikeHate() {
             $.ajax({
@@ -255,7 +275,7 @@
                     $(".toast").toast('show');
                     if (data.status == "ok") {
                         $("#btnFocus").text('√ 已关注');//修改显示内容
-                        $("#btnFocus").attr('class', 'btn btn-outline-secondary');//更换显示class
+                        $("#btnFocus").attr('class', 'badge badge-secondary');//更换显示class
                         $("#btnFocus").unbind();//取消绑定事件
                         $("#btnFocus").attr('id', 'btnunFocus');//id修改
                         $("#btnunFocus").hover(function () {//再给新id绑定hover事件
@@ -288,7 +308,7 @@
                     $(".toast").toast('show');
                     if (data.status == "ok") {
                         $("#btnunFocus").text('关注');
-                        $("#btnunFocus").attr('class', 'btn btn-outline-danger');
+                        $("#btnunFocus").attr('class', 'badge badge-danger');
                         $("#btnunFocus").unbind();
                         $("#btnunFocus").attr('id', 'btnFocus');
                         $("#btnFocus").on('click', function () {
@@ -296,6 +316,30 @@
                         });
                     }
                     else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function getMoreCategories(userId) {
+            $.ajax({
+                url: "/Article/GetMoreCategories",
+                type: "get",
+                dataType: "json",
+                data: { userId },
+                success: function (data) {
+                    if (data.status=="ok") {
+                        var categoriesHtml = "";
+                        for (var i = 0; i < data.data.length; i++) {
+                            var tag = data.data[i];
+                            categoriesHtml += '<a href="/Article/ArticleList?userId=' + data.userId + '&categoryId=' + tag.Id + '" class="badge badge-success mr-1">' + tag.BlogCategoryName + '</a>';
+                        }
+                        $("#categoriesDiv").html(categoriesHtml);
+                    } else if (
+                        data.status == "fail") {
                         $(".toast-body").text(data.result);
                         $(".toast").show();
                         $(".toast").toast('show');

@@ -4,61 +4,151 @@
     ViewBag.Title = "创建文章";
 }
 
-<div class="container body-content">
-    @using (Html.BeginForm())
-    {
-        @Html.AntiForgeryToken()
-
-        <div class="form-horizontal">
-            <hr />
-            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-            <div class="form-group">
-                @Html.EditorFor(model => model.Title, new { htmlAttributes = new { placeholder = "请在这里输入文章标题", @class = "form-control text-center" } })
-                @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
-            </div>
-
-            <textarea id="Content" name="Content"></textarea>
-
-            <div class="form-group mt-3">
-                @if (ViewBag.Categories.Count == 0)
-                {
-                    <div class="col-md-10">
-                        <span class="text-black-50"><small>暂无分类，请在'文章'->'添加文章类型'中添加。</small></span>
+<div class="container-xl">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="whiteBlock px-0">
+                <div class="text-center">
+                    <button class="btn btn-outline-success" data-toggle="modal" data-target=".modalCreateArticle">保存</button>
+                    <button class="btn btn-outline-info" onclick="ReFreshCategory('@ViewBag.UserId')">刷新分类</button>
+                </div>
+                <hr />
+                <div>
+                    <p class="ml-3">目录</p>
+                    <div class="overflow-auto max-vh-65">
+                        <div id="custom-toc-container" previewcontainer="false"></div>
                     </div>
-                }
-                else
-                {
-                    foreach (BlogCategoryDto categoryItem in ViewBag.Categories)
-                    {
-                        <div class="custom-control custom-checkbox col-md-2 col-sm-4 d-inline">
-                            <input class="custom-control-input" type="checkbox" name="categoryIds" value="@categoryItem.Id" id="@categoryItem.Id" />
-                            <label class="custom-control-label" for="@categoryItem.Id">@categoryItem.BlogCategoryName</label>
-                        </div>
-                    }
-                }
-            </div>
-
-            <div class="form-group">
-                <div class="col-md-offset-2 col-md-10 pl-0">
-                    <input type="submit" value="创建" class="btn btn-info" />
-                    @Html.ActionLink("返回文章列表", "ArticleList", "Article", new { }, new { @class = "btn btn-outline-secondary" })
                 </div>
             </div>
         </div>
-    }
+        <div class="col-md-9">
+            <div class="whiteBlock vh-85">
+                <div id="editor">
+                    <textarea style="display:none;"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modalCreateArticle" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">添加文章</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    @using (Html.BeginForm())
+                    {
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        @Html.EditorFor(model => model.Title, new { htmlAttributes = new { placeholder = "请在这里输入文章标题", @class = "form-control text-center" } })
+                        <textarea id="IntroContent" name="IntroContent" placeholder="文章简介，也可以不写哦" maxlength="200" class="mt-2 form-control"></textarea>
+                        @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                        <div class="form-group mt-3" id="categoriesDiv"></div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    <button type="button" onclick="AddArticle()" class="btn btn-success" data-dismiss="modal">提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @section headers{
-    <link href="~/Scripts/summernote-bs4.css" rel="stylesheet" />
-    <script src="~/Scripts/summernote-bs4.js"></script>
-    <script src="~/Scripts/summernote-zh-CN.js"></script>
+    <link href="/Plugin/editor.md/css/editormd.min.css" rel="stylesheet" />
 }
 
 @section Scripts {
+    <script src="/Plugin/editor.md/editormd.min.js"></script>
     <script>
-        $('#Content').summernote({
-            placeholder: '开始编写文章',
-            tabsize: 2,
-            lang: 'zh-CN'
+        $(function () {
+            ReFreshCategory('@ViewBag.UserId', true);//第一次获取所有分类，成功不弹提示
+
+            var editor = editormd("editor", {
+                width: "100%",
+                height: "100%",
+                tocContainer: "#custom-toc-container",
+                tocDropdown: false,
+                path: "../Plugin/editor.md/lib/"
+            });
         });
+
+        function ReFreshCategory(userId, isFirst) {
+            $.ajax({
+                url: "/Article/GetMoreCategories",
+                type: "get",
+                dataType: "json",
+                data: { userId },
+                success: function (data) {
+                    if (data.status == "ok") {
+                        var categoriesHtml = "";
+                        if (data.data.length != 0) {
+                            for (var i = 0; i < data.data.length; i++) {
+                                var tag = data.data[i];
+                                categoriesHtml += '<span class="custom-control custom-checkbox d-inline mr-3"><input class="custom-control-input" type="checkbox" name="categoryIds" value="' + tag.Id + '" id="' + tag.Id + '" /><label class="custom-control-label" for="' + tag.Id + '">' + tag.BlogCategoryName + '</label></span>';
+                            }
+                        } else {
+                            categoriesHtml += '<span class="text-black-50"><small>暂无分类，请在\'添加分类\'中添加。</small></span>';
+                        }
+                        $("#categoriesDiv").html(categoriesHtml);
+                        if (isFirst == true) {
+
+                        } else {
+                            $(".toast-body").text('刷新成功！');
+                            $(".toast").show();
+                            $(".toast").toast('show');
+                        }
+                    } else if (
+                        data.status == "fail") {
+                        if (isFirst == true) {
+                            var categoriesHtml = "";
+                            categoriesHtml += '<span class="text-black-50"><small>暂无分类，请在\'添加分类\'中添加。添加完成后请点击\'刷新分类\'按钮获取。</small></span>';
+                            $("#categoriesDiv").html(categoriesHtml);
+                        } else {
+                            $(".toast-body").text(data.result);
+                            $(".toast").show();
+                            $(".toast").toast('show');
+                        }
+                    }
+                }
+            })
+        }
+
+        function AddArticle() {
+            //创建一个数组
+            var categoryIds = new Array();
+            //获取所有选中的分类
+            var checkedCategoryIds = $("#categoriesDiv span input:checkbox:checked");
+            if (checkedCategoryIds.length == 0) {
+                //如果没有选中的元素
+            } else {
+                //TODO 可进行遍历操作
+                $.each(checkedCategoryIds, function () {
+                    categoryIds.push($(this).val());
+                });
+            }
+            var title = $("#Title").val();
+            var content = $(".editormd-markdown-textarea").val();
+            var introContent = $("#IntroContent").val();
+            $.ajax({
+                url: "/Article/AddArticle",
+                type: "post",
+                dataType: "json",
+                data: { title, content, introContent, categoryIds },
+                success: function (data) {
+                    if (data.status == "ok") {
+                        //跳转到文章详情页
+                        window.location ="http://"+ window.location.host + "/Article/ArticleDetails?id="+data.articleId;
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
     </script>
 }
