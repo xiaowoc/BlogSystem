@@ -68,7 +68,7 @@
                     @if (Session["userId"] == null && Request.Cookies["userId"] == null)
                     {
                         <li class="nav-item"><a href="javascript:void(0);" class="nav-link" data-toggle="modal" data-target=".modalRegister">注册</a></li>
-                        <li class="nav-item">@Html.ActionLink("登陆", "Login", "Home", new { }, new { @class = "nav-link" })</li>
+                        <li class="nav-item"><a href="javascript:void(0);" class="nav-link" data-toggle="modal" data-target=".modalLogin">登陆</a></li>
                     }
                     else
                     {
@@ -154,12 +154,56 @@
                                 <input class="form-control text-box single-line password" data-val="true" data-val-equalto="“确认密码”和“密码”不匹配。" data-val-equalto-other="*.Password" data-val-required="确认密码 字段是必需的。" id="ConfirmPassword" name="ConfirmPassword" placeholder="确认密码" type="password">
                                 <span class="field-validation-valid text-danger" data-valmsg-for="ConfirmPassword" data-valmsg-replace="true"></span>
                             </div>
-                            <p>已有账号？<a href="/Home/Login">立即登陆</a></p>
+                            <p>已有账号？ <a href="javascript:void(0);" onclick="RegisterHide()" class="text-decoration-none" data-toggle="modal" data-target=".modalLogin">立即登陆</a></p>
                         </form>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-                        <button type="button" onclick="Register()" class="btn btn-success" data-dismiss="modal">提交</button>
+                        <button type="button" onclick="Register()" class="btn btn-success" data-dismiss="modal">注册</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade modalLogin" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">登陆</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-signin" method="post" novalidate="novalidate">
+                            <div class="form-group">
+                                <label class="sr-only" for="Email">电子邮件</label>
+                                <input class="form-control ml-0 text-box single-line" data-val="true" data-val-email="电子邮件 字段不是有效的电子邮件地址。" data-val-required="电子邮件 字段是必需的。" id="LoginEmail" name="LoginEmail" placeholder="账号" type="email" value="">
+                                <span class="field-validation-valid text-danger" data-valmsg-for="Email" data-valmsg-replace="true"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="sr-only" for="LoginPwd">登陆密码</label>
+                                <input class="form-control text-box single-line password" data-val="true" data-val-length="字段 登陆密码 必须是一个字符串，其最小长度为 6，最大长度为 50。" data-val-length-max="50" data-val-length-min="6" data-val-required="登陆密码 字段是必需的。" id="LoginPwd" name="LoginPwd" placeholder="密码" type="password">
+                                <span class="field-validation-valid text-danger" data-valmsg-for="LoginPwd" data-valmsg-replace="true"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input class="custom-control-input" data-val="true" data-val-required="记住我 字段是必需的。" id="RememberMe" name="RememberMe" type="checkbox">
+                                    <label class="custom-control-label" for="RememberMe">记住我</label>
+                                    <span class="field-validation-valid text-danger" data-valmsg-for="RememberMe" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+
+                            <span>没有账户，<a href="javascript:void(0);" onclick="LoginHide()" data-toggle="modal" class="text-decoration-none" data-target=".modalRegister">立即注册</a></span> or
+                            <span><a class="text-decoration-none" href="/Home/ForgetPassword">忘记密码</a></span>
+                            <p class="text-center text-muted mt-2 mb-0"><small>如果在编辑文章页面或新建文章页面，请先保存当前进度再登陆！</small></p>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                        <button type="button" onclick="Login()" class="btn btn-info" data-dismiss="modal">登陆</button>
                     </div>
                 </div>
             </div>
@@ -244,6 +288,42 @@
                     }
                 }
             })
+        }
+
+        function Login() {
+            var email = $("#LoginEmail").val();
+            var password = $("#LoginPwd").val();
+            var rememberMe = $("#RememberMe").is(":checked");
+            $.ajax({
+                url: "/Home/Login/",
+                dataType: "json",
+                data: { email, password, rememberMe },
+                type: "post",
+                success: function (data) {
+                    if (data.status == "ok") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                        location.reload();
+                    } else if (data.status == "fail") {
+                        $(".toast-body").text(data.result);
+                        $(".toast").show();
+                        $(".toast").toast('show');
+                    }
+                }
+            })
+        }
+
+        function RegisterHide() {
+            $(function () {
+                $('.modalRegister').modal('hide')
+            });
+        }
+
+        function LoginHide() {
+            $(function () {
+                $('.modalLogin').modal('hide')
+            });
         }
 
         $(function () {

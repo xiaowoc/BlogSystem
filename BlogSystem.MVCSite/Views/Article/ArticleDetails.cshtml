@@ -33,8 +33,8 @@
                     }
                 </div>
                 <hr />
-                <div>
-                    @Html.Raw(Model.Content)
+                <div id="editor-view">
+                    <textarea style="display:none;">@Model.Content</textarea>
                 </div>
                 <button class="btn btn-outline-white pl-0" id="btnLike" title="喜欢" onclick="BtnGoodHandle(this)">
                     <img src="~/IconSvg/like.svg" /><span id="like">@Model.GoodCount</span>
@@ -68,62 +68,67 @@
         </div>
 
         <div class="col-md-3">
-            <div class="sticky-top">
-                <div class="whiteBlock text-center">
-                    <img class="rounded-circle m-2" style="width:88px;height:88px;border-radius:50%" src="~/Image/@userInfo.ImagePath" />
-                    <p class="m-2">@userInfo.Email</p>
-                    <p>@userInfo.Nickname</p>
-                    <span class="badge badge-info">关注 @userInfo.FocusCount 人</span>
-                    <span class="badge badge-info">粉丝 @userInfo.FansCount 人</span>
-                    @if (ViewBag.IsFocused)//已关注
+            <div class="whiteBlock text-center">
+                <img class="rounded-circle m-2" style="width:88px;height:88px;border-radius:50%" src="~/Image/@userInfo.ImagePath" />
+                <p class="m-2">@userInfo.Email</p>
+                <p>@userInfo.Nickname</p>
+                <span class="badge badge-info">关注 @userInfo.FocusCount 人</span>
+                <span class="badge badge-info">粉丝 @userInfo.FansCount 人</span>
+                @if (ViewBag.IsFocused)//已关注
+                {
+                    <a href="javascript:void(0);" id="btnunFocus" class="badge badge-secondary">√ 已关注</a>
+                }
+                else//未关注
+                {
+                    <a href="javascript:void(0);" id="btnFocus" class="badge badge-danger">点我关注</a>
+                }
+            </div>
+            <div class="whiteBlock">
+                <p class="d-flex">
+                    <span>标签</span>
+                    <span class="ml-auto"><small><a class="text-muted" href="/Article/CategoryList?userId=@userInfo.Id">分类列表</a></small></span>
+                </p>
+                <div id="categoriesDiv">
+                    @foreach (var item in ViewBag.TenTags)
                     {
-                        <a href="javascript:void(0);" id="btnunFocus" class="badge badge-secondary">√ 已关注</a>
+                        <a href="/Article/ArticleList?userId=@userInfo.Id&categoryId=@item.Id" class="badge badge-success mr-1">@item.BlogCategoryName</a>
                     }
-                    else//未关注
-                    {
-                        <a href="javascript:void(0);" id="btnFocus" class="badge badge-danger">点我关注</a>
-                    }
+                    <a class="badge badge-info" href="javascript:void(0);" onclick="getMoreCategories('@userInfo.Id')">更多</a>
                 </div>
-                <div class="whiteBlock">
-                    <p class="d-flex">
-                        <span>标签</span>
-                        <span class="ml-auto"><small><a class="text-muted" href="/Article/CategoryList?userId=@userInfo.Id">分类列表</a></small></span>
-                    </p>
-                    <div id="categoriesDiv">
-                        @foreach (var item in ViewBag.TenTags)
-                        {
-                            <a href="/Article/ArticleList?userId=@userInfo.Id&categoryId=@item.Id" class="badge badge-success mr-1">@item.BlogCategoryName</a>
-                        }
-                        <a class="badge badge-info" href="javascript:void(0);" onclick="getMoreCategories('@userInfo.Id')">更多</a>
-                    </div>
-                </div>
-                <div class="whiteBlock">
-                    <p>归档</p>
-                    <ul class="list-group">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>文章总计</span>
-                            <span class="badge badge-pill badge-info ">@ViewBag.ArticlesCount</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>分类总计</span>
-                            <span class="badge badge-pill badge-info ">@ViewBag.CategoriesCount</span>
-                        </li>
-                    </ul>
+            </div>
+            <div class="whiteBlock">
+                <p>归档</p>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>文章总计</span>
+                        <span class="badge badge-pill badge-info ">@ViewBag.ArticlesCount</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>分类总计</span>
+                        <span class="badge badge-pill badge-info ">@ViewBag.CategoriesCount</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="whiteBlock sticky-top overflow-auto max-vh-100">
+                <p>目录</p>
+                <div id="custom-toc-container">
                 </div>
             </div>
         </div>
     </div>
 </div>
 @section headers{
-    <style>
-        .categoryIds {
-            float: left;
-            margin: 0px 30px !important;
-            padding: 0px;
-        }
-    </style>
+    <link href="/Plugin/editor.md/css/editormd.min.css" rel="stylesheet" />
 }
 @section scripts{
+    <script src="~/Plugin/editor.md/lib/marked.min.js"></script>
+    <script src="~/Plugin/editor.md/lib/prettify.min.js"></script>
+    <script src="~/Plugin/editor.md/lib/raphael.min.js"></script>
+    <script src="~/Plugin/editor.md/lib/flowchart.min.js"></script>
+    <script src="~/Plugin/editor.md/lib/jquery.flowchart.min.js"></script>
+    <script src="~/Plugin/editor.md/lib/underscore.min.js"></script>
+    <script src="~/Plugin/editor.md/lib/sequence-diagram.min.js"></script>
+    <script src="/Plugin/editor.md/editormd.min.js"></script>
     <script>
         var articleId = '@Model.Id';
 
@@ -137,8 +142,8 @@
             });
             $("#btnunFocus").hover(function () {
                 $("#btnunFocus").text("取消关注");
-            },function () {
-                    $("#btnunFocus").text("√ 已关注");
+            }, function () {
+                $("#btnunFocus").text("√ 已关注");
             });
 
             //------------------------------------------------------
@@ -154,6 +159,11 @@
             GetComments(1, 10);//获取评论 第一页 十条数据
 
             GetLikeHate();//查看是否已经点赞
+
+            editormd.markdownToHTML("editor-view", {
+                tocContainer: "#custom-toc-container",//设置导航栏容器
+                tocDropdown: false,//是否是以下拉框形式的目录
+            });//获取文章内容
         })
 
         function GetLikeHate() {

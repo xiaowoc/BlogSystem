@@ -8,6 +8,7 @@ using BlogSystem.MVCSite.Tools;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -56,19 +57,25 @@ namespace BlogSystem.MVCSite.Controllers
         [HttpPost]
         public async Task<ActionResult> Register(string email, string password, string confirmPassword)
         {
-            //不可为空，邮箱不可重复，密码验证正确
+            //不可为空，账号必须是邮箱格式，邮箱不可重复，密码验证正确
             if (email != null && password != null && confirmPassword != null && email.Trim() != "" && password.Trim() != "" && confirmPassword.Trim() != "")
             {
-                if (password!=confirmPassword)
+                if (password != confirmPassword)
                 {
                     return Json(new { status = "fail", result = "两次输入的密码不一致！" }, JsonRequestBehavior.AllowGet);
                 }
+                Regex RegEmail = new Regex("^[\\w-]+@[\\w-]+\\.(com|net|org|edu|mil|tv|biz|info)$");//w 英文字母或数字的字符串，和 [a-zA-Z0-9] 语法一样 
+                Match m = RegEmail.Match(email);
+                if (!m.Success)
+                {
+                    return Json(new { status = "fail", result = "账号必须是邮箱格式的哦！" }, JsonRequestBehavior.AllowGet);
+                }
                 IUserManager userManager = new UserManager();
                 UserInformationDto user = await userManager.GetUserByEmail(email);
-                if (user!=null)//已经有人使用了该邮箱
+                if (user != null)//已经有人使用了该邮箱
                 {
                     return Json(new { status = "fail", result = "该邮箱已被使用！" }, JsonRequestBehavior.AllowGet);
-                }        
+                }
                 var passWord = Md5Helper.Md5(confirmPassword);
                 if (await userManager.Register(email, passWord))
                 {
@@ -79,7 +86,7 @@ namespace BlogSystem.MVCSite.Controllers
                     return Json(new { status = "ok", result = "注册成功！" }, JsonRequestBehavior.AllowGet);
                 }
             }
-            return Json(new { status="fail",result="提交的数据不完整，请重试！"},JsonRequestBehavior.AllowGet);
+            return Json(new { status = "fail", result = "提交的数据不完整，请重试！" }, JsonRequestBehavior.AllowGet);
         }
 
         [AcceptVerbs("Get", "Post")]
@@ -97,67 +104,114 @@ namespace BlogSystem.MVCSite.Controllers
             }
         }
 
-        [HttpGet]
-        public ActionResult Login()
-        {
-            return View();
-        }
+        //[HttpGet]
+        //public ActionResult Login()
+        //{
+        //    return View();
+        //}
+
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        if (Session["userId"] != null)
+        //        {
+        //            Session["loginName"] = null;
+        //            Session["userId"] = null;
+        //        }
+        //        if (Request.Cookies["loginName"] != null)
+        //        {
+        //            Response.Cookies["loginName"].Expires = DateTime.Now.AddDays(-1);
+        //            Response.Cookies["userId"].Expires = DateTime.Now.AddDays(-1);
+        //        }
+        //        IUserManager userManager = new UserManager();
+        //        Guid userId;
+        //        var passWord = Md5Helper.Md5(model.LoginPwd);
+        //        if (userManager.Login(model.Email, passWord, out userId))
+        //        {
+        //            //跳转
+        //            //使用cookie或者是session
+        //            string userIdToken = JwtHelper.SetJwtEncode(userId.ToString(), 86400);
+        //            if (model.RemenberMe)
+        //            {
+        //                Response.Cookies.Add(new HttpCookie("loginName")//将邮箱地址存进cookie
+        //                {
+        //                    Value = model.Email,
+        //                    Expires = DateTime.Now.AddDays(1)
+        //                });
+        //                Response.Cookies.Add(new HttpCookie("userId")//将用户id存进cookie
+        //                {
+        //                    Value = userIdToken,
+        //                    Expires = DateTime.Now.AddDays(1)
+        //                });
+        //            }
+        //            //存完cookie也要补充一份session
+        //            Session["loginName"] = model.Email;//将邮箱地址存进session
+        //            Session["userId"] = userId;//将用户id存进session
+        //            if (returnUrl != null && returnUrl.StartsWith(Request.Url.Scheme + "://" + Request.Url.Host))//验证是否为本地链接
+        //            {
+        //                return Redirect(returnUrl);
+        //            }
+        //            else
+        //            {
+        //                return RedirectToAction(nameof(Index));
+        //            }
+        //        }
+        //        else
+        //        {
+        //            ModelState.AddModelError(string.Empty, "您的账号密码有误");
+        //        }
+        //    }
+        //    return View(model);
+        //}
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
+        public async Task<ActionResult> Login(string email, string password, bool? rememberMe)
         {
-            if (ModelState.IsValid)
+            //数据不完整不可登陆
+            if (email == null || email.Trim() == "" || password == null || password.Trim() == "" || rememberMe == null)
             {
-                if (Session["userId"] != null)
-                {
-                    Session["loginName"] = null;
-                    Session["userId"] = null;
-                }
-                if (Request.Cookies["loginName"] != null)
-                {
-                    Response.Cookies["loginName"].Expires = DateTime.Now.AddDays(-1);
-                    Response.Cookies["userId"].Expires = DateTime.Now.AddDays(-1);
-                }
-                IUserManager userManager = new UserManager();
-                Guid userId;
-                var passWord = Md5Helper.Md5(model.LoginPwd);
-                if (userManager.Login(model.Email, passWord, out userId))
-                {
-                    //跳转
-                    //使用cookie或者是session
-                    string userIdToken = JwtHelper.SetJwtEncode(userId.ToString(), 86400);
-                    if (model.RemenberMe)
-                    {
-                        Response.Cookies.Add(new HttpCookie("loginName")//将邮箱地址存进cookie
-                        {
-                            Value = model.Email,
-                            Expires = DateTime.Now.AddDays(1)
-                        });
-                        Response.Cookies.Add(new HttpCookie("userId")//将用户id存进cookie
-                        {
-                            Value = userIdToken,
-                            Expires = DateTime.Now.AddDays(1)
-                        });
-                    }
-                    //存完cookie也要补充一份session
-                    Session["loginName"] = model.Email;//将邮箱地址存进session
-                    Session["userId"] = userId;//将用户id存进session
-                    if (returnUrl != null && returnUrl.StartsWith(Request.Url.Scheme + "://" + Request.Url.Host))//验证是否为本地链接
-                    {
-                        return Redirect(returnUrl);
-                    }
-                    else
-                    {
-                        return RedirectToAction(nameof(Index));
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "您的账号密码有误");
-                }
+                return Json(new { status = "fail", result = "提交的数据不完整，请重试" }, JsonRequestBehavior.AllowGet);
             }
-            return View(model);
+            //在登陆状态时再请求登陆则清空上一个账号信息
+            if (Session["userId"] != null)
+            {
+                Session["loginName"] = null;
+                Session["userId"] = null;
+            }
+            if (Request.Cookies["loginName"] != null)
+            {
+                Response.Cookies["loginName"].Expires = DateTime.Now.AddDays(-1);
+                Response.Cookies["userId"].Expires = DateTime.Now.AddDays(-1);
+            }
+            IUserManager userManager = new UserManager();
+            Guid userId;
+            var passWord = Md5Helper.Md5(password);
+            if (!userManager.Login(email, passWord, out userId))//找不到用户信息，登陆失败
+            {
+                return Json(new { status = "fail", result = "您的账号密码有误" }, JsonRequestBehavior.AllowGet);
+            }
+            //使用cookie或者是session
+            string userIdToken = JwtHelper.SetJwtEncode(userId.ToString(), 86400);//生成1天的jwt信息
+            if (rememberMe.Value)
+            {
+                Response.Cookies.Add(new HttpCookie("loginName")//将邮箱地址存进cookie
+                {
+                    Value = email,
+                    Expires = DateTime.Now.AddDays(1)
+                });
+                Response.Cookies.Add(new HttpCookie("userId")//将用户id存进cookie
+                {
+                    Value = userIdToken,
+                    Expires = DateTime.Now.AddDays(1)
+                });
+            }
+            //存完cookie也要补充一份session，自动登陆
+            Session["loginName"] = email;//将邮箱地址存进session
+            Session["userId"] = userId;//将用户id存进session
+            return Json(new { status = "ok", result = "登陆成功" }, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]

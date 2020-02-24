@@ -67,12 +67,12 @@
         $(function () {
             ReFreshCategory('@ViewBag.UserId', true);//第一次获取所有分类，成功不弹提示
 
-            var editor = editormd("editor", {
+            editormd("editor", {
                 width: "100%",
                 height: "100%",
                 tocContainer: "#custom-toc-container",
                 tocDropdown: false,
-                path: "../Plugin/editor.md/lib/"
+                path: "/Plugin/editor.md/lib/"
             });
         });
 
