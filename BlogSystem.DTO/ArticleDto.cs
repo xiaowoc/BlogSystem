@@ -14,6 +14,8 @@ namespace BlogSystem.DTO
         public string Title { get; set; }
         [Display(Name = "内容")]
         public string Content { get; set; }
+        [Display(Name = "内容简介")]
+        public string IntroContent { get; set; }
         [Display(Name = "创建时间")]
         public DateTime CreateTime { get; set; }
         [Display(Name = "邮箱")]

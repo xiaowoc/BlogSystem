@@ -22,7 +22,7 @@
                         <img id="previewImg" class="rounded-circle" style="display:none" />
                         <div class="text-center">
                             <a class="text-decoration-none" href="javascript:void(0);" onclick='$("#previewFile").click()'>
-                                <img src="~/IconSvg/image.svg" class="myIcon" style="width:24px;height:24px;" />选择图片
+                                <svg class="myIcon" style="fill:#c86a95;width:24px;height:24px;"><use xlink:href="/IconSvg/data.svg#image"></use></svg>选择图片
                             </a>
                         </div>
                         <form enctype="multipart/form-data" id="changeImageForm">
@@ -52,12 +52,12 @@
                                     <a href="/Article/ArticleDetails/@item.Id" class=" text-decoration-none">@item.Title</a>
                                 </strong>
                                 <div class="py-2">
-                                    <p class="h6">@item.Content</p>
+                                    <p class="h6">@item.IntroContent</p>
                                 </div>
                                 <div>
-                                    <span><img class="myIcon" src="/IconSvg/calendar.svg" title="创建日期" /> @item.CreateTime</span>
-                                    <span><img class="myIcon" src="/IconSvg/like.svg" title="喜欢" />@item.GoodCount</span>
-                                    <span><img class="myIcon" src="/IconSvg/hate.svg" title="不喜欢" />@item.BadCount</span>
+                                    <span title="创建日期"><svg class="myIcon" style="fill:#000000"><use xlink:href="/IconSvg/data.svg#calendar"></use></svg>@item.CreateTime</span>
+                                    <span title="喜欢"><svg class="myIcon" style="fill:#d4237a"><use xlink:href="/IconSvg/data.svg#like"></use></svg>@item.GoodCount</span>
+                                    <span title="不喜欢"><svg class="myIcon" style="fill:#13227a"><use xlink:href="/IconSvg/data.svg#hate"></use></svg>@item.BadCount</span>
                                 </div>
                                 <div id="categories">
                                     @for (int i = 0; i < item.CategoryIds.Count(); i++)
@@ -88,12 +88,12 @@
                             <a href="/Article/ArticleDetails/@item.Id" class=" text-decoration-none">@item.Title</a>
                         </strong>
                         <div class="py-2">
-                            <p class="h6">@item.Content</p>
+                            <p class="h6">@item.IntroContent</p>
                         </div>
                         <div>
-                            <span><img class="myIcon" src="/IconSvg/calendar.svg" title="创建日期" /> @item.CreateTime</span>
-                            <span><img class="myIcon" src="/IconSvg/like.svg" title="喜欢" />@item.GoodCount</span>
-                            <span><img class="myIcon" src="/IconSvg/hate.svg" title="不喜欢" />@item.BadCount</span>
+                            <span title="创建日期"><svg class="myIcon" style="fill:#000000"><use xlink:href="/IconSvg/data.svg#calendar"></use></svg>@item.CreateTime</span>
+                            <span title="喜欢"><svg class="myIcon" style="fill:#d4237a"><use xlink:href="/IconSvg/data.svg#like"></use></svg>@item.GoodCount</span>
+                            <span title="不喜欢"><svg class="myIcon" style="fill:#13227a"><use xlink:href="/IconSvg/data.svg#hate"></use></svg>@item.BadCount</span>
                         </div>
                         <div id="categories">
                             @for (int i = 0; i < item.CategoryIds.Count(); i++)

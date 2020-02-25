@@ -47,7 +47,7 @@ namespace BlogSystem.MVCSite.Controllers
                 string userCookieId = ""; string message;
                 if (Request.Cookies["userId"] != null)
                 {
-                    if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                    if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                     {
                         return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);
                     }
@@ -85,7 +85,7 @@ namespace BlogSystem.MVCSite.Controllers
             string userCookieId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
                     ErrorController.message = message;
                     return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
@@ -125,7 +125,7 @@ namespace BlogSystem.MVCSite.Controllers
             string userCookieId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
                     ErrorController.message = message;
                     return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
@@ -137,10 +137,11 @@ namespace BlogSystem.MVCSite.Controllers
         }
 
         [HttpPost]
+        [ValidateInput(false)]
         public async Task<ActionResult> AddArticle(string title, string content, string introContent, Guid[] categoryIds)
         {
             //未登录、内容不为空、标题不为空、分类id不属于自己
-            if (title == null || content == null || title.Trim() == "" || content.Trim() == "" || categoryIds == null || categoryIds.Length == 0)//提交的信息为空
+            if (title == null || content == null || title.Trim() == "" || content.Trim() == "")//提交的信息为空
             {
                 return Json(new { status = "fail", result = "提交的信息不完整，请重试" }, JsonRequestBehavior.AllowGet);//返回错误信息
             }
@@ -148,7 +149,7 @@ namespace BlogSystem.MVCSite.Controllers
             string userCookieId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
                     return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);//返回错误信息
                 }
@@ -158,19 +159,22 @@ namespace BlogSystem.MVCSite.Controllers
             {
                 return Json(new { status = "fail", result = "获取不到用户信息，请检查登陆状态" }, JsonRequestBehavior.AllowGet);//返回错误信息
             }
-            //循环自己所有的分类，对比是否正确
             IArticleManager articleManager = new ArticleManager();
-            List<BlogCategoryDto> categoryDtoes = await articleManager.GetAllCategories(Guid.Parse(userId));//获取分类对象集合
-            List<Guid> currentUserCategoryIds = new List<Guid>();//将分类对象中的分类id整合进一个集合中
-            foreach (BlogCategoryDto category in categoryDtoes)
+            //如果提交的分类不为空，循环自己所有的分类，对比是否正确
+            if (categoryIds != null)
             {
-                currentUserCategoryIds.Add(category.Id);
-            }
-            for (int i = 0; i < categoryIds.Length; i++)//循环检查提交的分类id是否和自身的分类id有对应
-            {
-                if (!currentUserCategoryIds.Contains(categoryIds[i]))//如果提交的分类id与自身的分类id没有匹配项，提示错误
+                List<BlogCategoryDto> categoryDtoes = await articleManager.GetAllCategories(Guid.Parse(userId));//获取分类对象集合
+                List<Guid> currentUserCategoryIds = new List<Guid>();//将分类对象中的分类id整合进一个集合中
+                foreach (BlogCategoryDto category in categoryDtoes)
                 {
-                    return Json(new { status = "fail", result = "提交的分类与用户所拥有的分类不匹配，请重试！" }, JsonRequestBehavior.AllowGet);
+                    currentUserCategoryIds.Add(category.Id);
+                }
+                for (int i = 0; i < categoryIds.Length; i++)//循环检查提交的分类id是否和自身的分类id有对应
+                {
+                    if (!currentUserCategoryIds.Contains(categoryIds[i]))//如果提交的分类id与自身的分类id没有匹配项，提示错误
+                    {
+                        return Json(new { status = "fail", result = "提交的分类与用户所拥有的分类不匹配，请重试！" }, JsonRequestBehavior.AllowGet);
+                    }
                 }
             }
             Guid articleId = await articleManager.CreateArticle(title, content, introContent, categoryIds, Guid.Parse(userId));
@@ -199,7 +203,7 @@ namespace BlogSystem.MVCSite.Controllers
             string userCookieId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
                     ErrorController.message = message;
                     return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
@@ -285,7 +289,7 @@ namespace BlogSystem.MVCSite.Controllers
             string userCookieId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
                     ErrorController.message = message;
                     return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
@@ -307,18 +311,15 @@ namespace BlogSystem.MVCSite.Controllers
             }
             var data = await articleManager.GetOneArticleById(id.Value);//要经过上面的判断否则会出错
 
-            if (data.userId == Guid.Parse(userId))//文章作者才可编辑文章
-            {
-                //将实体内容放进viewmodel中输出到前端
-                ViewBag.UserId = userId;
-                ViewBag.Article = data;
-                return View();
-            }
-            else
+            if (data.userId != Guid.Parse(userId))//文章作者才可编辑文章
             {
                 ErrorController.message = "非本人文章不可进行编辑";
                 return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
             }
+            //将实体内容放进viewmodel中输出到前端
+            ViewBag.UserId = userId;
+            ViewBag.Article = data;
+            return View();
         }
 
         //[HttpGet]
@@ -440,10 +441,11 @@ namespace BlogSystem.MVCSite.Controllers
         //}
 
         [HttpPost]
+        [ValidateInput(false)]
         public async Task<ActionResult> EditArticle(Guid? articleId, string title, string content, string introContent, Guid[] categoryIds)
         {
             //id和内容和标题为空、未登录、登陆id不是这篇文章的拥有者、分类id不属于自己
-            if (articleId == null || articleId == Guid.Empty || title == null || content == null || title.Trim() == "" || content.Trim() == "" || categoryIds == null || categoryIds.Length == 0)//提交的信息为空
+            if (articleId == null || articleId == Guid.Empty || title == null || content == null || title.Trim() == "" || content.Trim() == "")//提交的信息为空
             {
                 return Json(new { status = "fail", result = "提交的信息不完整，请重试" }, JsonRequestBehavior.AllowGet);//返回错误信息
             }
@@ -451,7 +453,7 @@ namespace BlogSystem.MVCSite.Controllers
             string userCookieId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
                     return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);//返回错误信息
                 }
@@ -472,22 +474,25 @@ namespace BlogSystem.MVCSite.Controllers
             {
                 return Json(new { status = "fail", result = "非本人文章不可进行编辑" }, JsonRequestBehavior.AllowGet);//返回错误信息
             }
-            //循环自己所有的分类，对比是否正确
-            List<BlogCategoryDto> categoryDtoes = await articleManager.GetAllCategories(Guid.Parse(userId));//获取分类对象集合
-            List<Guid> currentUserCategoryIds = new List<Guid>();//将分类对象中的分类id整合进一个集合中
-            foreach (BlogCategoryDto category in categoryDtoes)
+            //提交的分类信息不为空，循环自己所有的分类，对比是否正确
+            if (categoryIds != null )
             {
-                currentUserCategoryIds.Add(category.Id);
-            }
-            for (int i = 0; i < categoryIds.Length; i++)//循环检查提交的分类id是否和自身的分类id有对应
-            {
-                if (!currentUserCategoryIds.Contains(categoryIds[i]))//如果提交的分类id与自身的分类id没有匹配项，提示错误
+                List<BlogCategoryDto> categoryDtoes = await articleManager.GetAllCategories(Guid.Parse(userId));//获取分类对象集合
+                List<Guid> currentUserCategoryIds = new List<Guid>();//将分类对象中的分类id整合进一个集合中
+                foreach (BlogCategoryDto category in categoryDtoes)
                 {
-                    return Json(new { status = "fail", result = "提交的分类与用户所拥有的分类不匹配，请重试！" }, JsonRequestBehavior.AllowGet);
+                    currentUserCategoryIds.Add(category.Id);
+                }
+                for (int i = 0; i < categoryIds.Length; i++)//循环检查提交的分类id是否和自身的分类id有对应
+                {
+                    if (!currentUserCategoryIds.Contains(categoryIds[i]))//如果提交的分类id与自身的分类id没有匹配项，提示错误
+                    {
+                        return Json(new { status = "fail", result = "提交的分类与用户所拥有的分类不匹配，请重试！" }, JsonRequestBehavior.AllowGet);
+                    }
                 }
             }
-            await articleManager.EditArticle(articleId.Value, title, content, categoryIds);
-            return Json(new { status = "ok", result = "提交成功！", articleId= articleId.Value }, JsonRequestBehavior.AllowGet);
+            await articleManager.EditArticle(articleId.Value, title, content, introContent, categoryIds);
+            return Json(new { status = "ok", result = "提交成功！", articleId = articleId.Value }, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
@@ -502,7 +507,7 @@ namespace BlogSystem.MVCSite.Controllers
             string userCookieId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
                     return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);
                 }
@@ -650,7 +655,7 @@ namespace BlogSystem.MVCSite.Controllers
             string userCookieId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
                     return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);//返回错误信息
                 }
@@ -681,7 +686,7 @@ namespace BlogSystem.MVCSite.Controllers
             string userCookieId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
                     return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);//返回错误信息
                 }

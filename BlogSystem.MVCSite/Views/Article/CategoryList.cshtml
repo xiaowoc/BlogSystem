@@ -57,11 +57,11 @@
                                     <a href="/Article/ArticleList?userId=@ViewBag.RequestId&categoryId=@item.Id" class=" text-decoration-none">@item.BlogCategoryName</a>
                                 </strong>
                                 <div>
-                                    <span><img class="myIcon" src="/IconSvg/calendar.svg" title="创建日期" /> @item.CreateTime</span>
-                                    <span><img class="myIcon" src="/IconSvg/flow.svg" title="文章引用数量" />@item.ArticleCount</span>
+                                    <span title="创建时间"><svg class="myIcon" style="fill:#000000"><use xlink:href="/IconSvg/data.svg#calendar"></use></svg>@item.CreateTime</span>
+                                    <span title="文章引用数量"><svg class="myIcon" style="fill:#e861dc"><use xlink:href="/IconSvg/data.svg#flow"></use></svg>@item.ArticleCount</span>
                                     @if (ViewBag.IsCurrentUser)
                                     {
-                                        <a href="javascript:void(0);" onclick="OpenEdit('@item.Id','@item.BlogCategoryName')" data-toggle="modal" data-target=".modalEditCategory"><img class="myIcon" src="/IconSvg/edit.svg" title="编辑" /></a>
+                                        <a href="javascript:void(0);" onclick="OpenEdit('@item.Id','@item.BlogCategoryName')" title="编辑" data-toggle="modal" data-target=".modalEditCategory"><svg class="myIcon" style="fill:#f9d17c"><use xlink:href="/IconSvg/data.svg#edit"></use></svg></a>
                                     }
                                     <div class="d-none" id="confirmDeleteSpan_@item.Id">
                                         <span class="badge badge-warning">确认是否删除？</span>
@@ -71,7 +71,7 @@
                                     <div class="d-inline" id="deleteSpan_@item.Id">
                                         @if (ViewBag.IsCurrentUser)
                                         {
-                                            <a href="javascript:void(0);" onclick="confirmDelete('@item.Id',true)"><img class="myIcon" src="/IconSvg/delete.svg" title="删除" /></a>
+                                            <a href="javascript:void(0);" onclick="confirmDelete('@item.Id',true)" title="删除"><svg class="myIcon" style="fill:#d81e06"><use xlink:href="/IconSvg/data.svg#delete"></use></svg></a>
                                         }
                                     </div>
                                 </div>

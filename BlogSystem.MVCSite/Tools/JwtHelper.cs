@@ -61,7 +61,7 @@ namespace BlogSystem.MVCSite.Tools
                 var userInfo = decoder.DecodeToObject(token, secret, verify: true);
                 //此处json为IDictionary<string, object> 类型
                 userId = userInfo["userId"].ToString();  //可获取当前id
-                message = "成功";
+                message = "";
                 return true;
 
                 //double exp = double.Parse(userInfo["exp"].ToString());  //可获取过期时间

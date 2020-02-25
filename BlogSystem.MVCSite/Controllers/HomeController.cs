@@ -235,7 +235,7 @@ namespace BlogSystem.MVCSite.Controllers
             string userCookieId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
                     return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);
                 }
@@ -350,7 +350,7 @@ namespace BlogSystem.MVCSite.Controllers
                 string userCookieId = ""; string message;
                 if (Request.Cookies["userId"] != null)
                 {
-                    if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                    if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                     {
                         return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);
                     }
@@ -374,7 +374,7 @@ namespace BlogSystem.MVCSite.Controllers
                 string userCookieId = ""; string message;
                 if (Request.Cookies["userId"] != null)
                 {
-                    if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                    if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                     {
                         return Json(new { status = "fail", result = message }, JsonRequestBehavior.AllowGet);
                     }
@@ -403,7 +403,7 @@ namespace BlogSystem.MVCSite.Controllers
             string userCookieId = ""; string message;
             if (Request.Cookies["userId"] != null)
             {
-                if (JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
+                if (!JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userCookieId, out message))
                 {
                     ErrorController.message = message;
                     return RedirectToAction("IllegalOperationError", "Error");//返回错误页面
@@ -584,37 +584,28 @@ namespace BlogSystem.MVCSite.Controllers
         [HttpPost]
         public async Task<ActionResult> ResetPassword(string token, ResetPasswordViewModel model)
         {
-            if (ModelState.IsValid)
-            {
-                string userId; string message;
-                //jwt验证是否有效
-                if (JwtHelper.GetJwtDecode(token, out userId, out message))
-                {
-                    string password = Md5Helper.Md5(model.ConfirmPassword);
-                    IUserManager userManager = new UserManager();
-                    //验证token内容是否存在
-                    string modelError = await userManager.ResetPassword(token, Guid.Parse(userId), password);
-                    if (modelError == null)//成功
-                    {
-                        ViewBag.Message = "重置密码成功！";
-                        return View("Tips");
-                    }
-                    else//失败
-                    {
-                        ModelState.AddModelError(string.Empty, modelError);
-                        return View(model);
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, message);
-                    return View(model);
-                }
-            }
-            else
+            if (!ModelState.IsValid)
             {
                 return View(model);
             }
+            string userId; string message;
+            //jwt验证是否有效
+            if (!JwtHelper.GetJwtDecode(token, out userId, out message))
+            {
+                ModelState.AddModelError(string.Empty, message);
+                return View(model);
+            }
+            string password = Md5Helper.Md5(model.ConfirmPassword);
+            IUserManager userManager = new UserManager();
+            //验证token内容是否存在
+            string modelError = await userManager.ResetPassword(token, Guid.Parse(userId), password);
+            if (modelError != null)//失败
+            {
+                ModelState.AddModelError(string.Empty, modelError);
+                return View(model);
+            }
+            ViewBag.Message = "重置密码成功！";
+            return View("Tips");
         }
 
         /// <summary>

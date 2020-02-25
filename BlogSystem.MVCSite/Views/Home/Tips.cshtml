@@ -4,13 +4,15 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container body-content">
-    <div class="text-center">
-        <hr />
-        <p class="h3">@ViewBag.Message</p>
-        <span class="mt-3">
-            @Html.ActionLink("返回登陆", "Login", "Home", new { }, new { @class = "btn btn-info" })
-            @Html.ActionLink("返回首页", "Index", "Home", new { }, new { @class = "btn btn-outline-secondary" })
-        </span>
+<div class="container-xl">
+    <div class="whiteBlock">
+        <div class="text-center">
+            <hr />
+            <p class="h3">@ViewBag.Message</p>
+            <span class="mt-3">
+                @Html.ActionLink("返回登陆", "Login", "Home", new { }, new { @class = "btn btn-info" })
+                @Html.ActionLink("返回首页", "Index", "Home", new { }, new { @class = "btn btn-outline-secondary" })
+            </span>
+        </div>
     </div>
 </div>

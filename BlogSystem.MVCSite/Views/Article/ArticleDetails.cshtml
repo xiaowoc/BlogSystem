@@ -13,12 +13,12 @@
                 </div>
                 <div>
                     <span>
-                        <a href="/Home/UserDetails/@userInfo.Id" class="mr-3 text-decoration-none">
-                            <img src="~/IconSvg/user.svg" title="用户" class="myIcon" /> @Html.DisplayFor(model => model.Email)
+                        <a href="/Home/UserDetails/@userInfo.Id" class="mr-3 text-decoration-none" title="用户">
+                            <svg class="myIcon" style="fill:#d66063"><use xlink:href="/IconSvg/data.svg#user"></use></svg>@Html.DisplayFor(model => model.Email)
                         </a>
                     </span>
-                    <span class="text-muted mr-3">
-                        <img src="~/IconSvg/calendar.svg" title="创建时间" class="myIcon" /> @Html.DisplayFor(model => model.CreateTime)
+                    <span class="text-muted mr-3" title="创建时间">
+                        <svg class="myIcon" style="fill:#000000"><use xlink:href="/IconSvg/data.svg#calendar"></use></svg>@Html.DisplayFor(model => model.CreateTime)
                     </span>
                     @if (Model.CategoryNames.Length == 0)
                     {
@@ -37,10 +37,10 @@
                     <textarea style="display:none;">@Model.Content</textarea>
                 </div>
                 <button class="btn btn-outline-white pl-0" id="btnLike" title="喜欢" onclick="BtnGoodHandle(this)">
-                    <img src="~/IconSvg/like.svg" /><span id="like">@Model.GoodCount</span>
+                    <svg class="myIcon" style="fill:#d4237a"><use xlink:href="/IconSvg/data.svg#like"></use></svg><span id="like">@Model.GoodCount</span>
                 </button>
                 <button class="btn btn-outline-white pl-0" id="btnHate" title="不喜欢" onclick="BtnBadHandle(this)">
-                    <img src="~/IconSvg/hate.svg" /><span id="hate">@Model.BadCount</span>
+                    <svg class="myIcon" style="fill:#13227a"><use xlink:href="/IconSvg/data.svg#hate"></use></svg><span id="hate">@Model.BadCount</span>
                 </button>
             </div>
             <div class="whiteBlock">
@@ -273,7 +273,7 @@
         }
 
         function FocusUser() {
-            var focusUserId = '@ViewBag.UserId';
+            var focusUserId = '@Model.Id';
             $.ajax({
                 url: "/Home/FocusUser/",
                 dataType: "json",
@@ -306,7 +306,7 @@
         }
 
         function UnFocusUser() {
-            var focusUserId = '@ViewBag.UserId';
+            var focusUserId = '@Model.Id';
             $.ajax({
                 url: "/Home/UnFocusUser/",
                 dataType: "json",

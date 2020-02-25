@@ -132,17 +132,17 @@ namespace BlogSystem.BLL
             }
         }
 
-        public async Task EditArticle(Guid articleId, string title, string content, Guid[] categoryIds)
+        public async Task EditArticle(Guid articleId, string title, string content,string introContent, Guid[] categoryIds)
         {
             using (IArticleService articleSvc = new ArticleService())
             {
-                //处理内容
-                string IntroContent = FilterHTML(content);
+                ////处理内容
+                //string IntroContent = FilterHTML(content);
                 //获取当前文章的实体，修改标题和内容
                 var article = await articleSvc.GetOneByIdAsync(articleId);
                 article.Title = title;
                 article.Content = content;
-                article.IntroContent = IntroContent;
+                article.IntroContent = introContent;
                 article.IsTop = categoryIds != null ? categoryIds.Contains(Guid.Parse("00000000-0000-0000-0000-000000000001")) : false;
                 await articleSvc.EditAsync(article);
                 using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
@@ -216,7 +216,7 @@ namespace BlogSystem.BLL
                     GoodCount = m.GoodCount,
                     BadCount = m.BadCount,
                     Email = m.User.Email,
-                    Content = m.IntroContent,
+                    IntroContent = m.IntroContent,
                     CreateTime = m.CreatTime,
                     Id = m.Id,
                     imagePath = m.User.ImagePath
@@ -245,7 +245,7 @@ namespace BlogSystem.BLL
                     GoodCount = m.Article.GoodCount,
                     BadCount = m.Article.BadCount,
                     Email = m.Article.User.Email,
-                    Content = m.Article.IntroContent,
+                    IntroContent = m.Article.IntroContent,
                     CreateTime = m.CreatTime,
                     Id = m.Article.Id,
                     imagePath = m.Article.User.ImagePath
@@ -349,6 +349,7 @@ namespace BlogSystem.BLL
                 {
                     Id = m.Id,
                     Title = m.Title,
+                    IntroContent=m.IntroContent,
                     Content = m.Content,
                     CreateTime = m.CreatTime,
                     Email = m.User.Email,
@@ -508,7 +509,7 @@ namespace BlogSystem.BLL
                 {
                     Id = m.Id,
                     Title = m.Title,
-                    Content = m.IntroContent,
+                    IntroContent = m.IntroContent,
                     CreateTime = m.CreatTime,
                     Email = m.User.Email,
                     imagePath = m.User.ImagePath,
@@ -565,7 +566,7 @@ namespace BlogSystem.BLL
                 {
                     Id = m.Id,
                     Title = m.Title,
-                    Content = m.IntroContent,
+                    IntroContent = m.IntroContent,
                     CreateTime = m.CreatTime,
                     Email = m.User.Email,
                     imagePath = m.User.ImagePath,
@@ -614,7 +615,7 @@ namespace BlogSystem.BLL
                     GoodCount = m.GoodCount,
                     BadCount = m.BadCount,
                     Email = m.User.Email,
-                    Content = m.IntroContent,
+                    IntroContent = m.IntroContent,
                     CreateTime = m.CreatTime,
                     Id = m.Id,
                     imagePath = m.User.ImagePath

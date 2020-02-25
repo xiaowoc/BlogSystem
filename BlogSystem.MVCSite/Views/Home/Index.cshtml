@@ -84,13 +84,13 @@
                                 <a href="/Article/ArticleDetails/@item.Id" class=" text-decoration-none">@item.Title</a>
                             </strong>
                             <div class="py-2">
-                                <p class="h6">@item.Content</p>
+                                <p class="h6">@item.IntroContent</p>
                             </div>
                             <div>
-                                <span><a href="/Home/UserDetails?id=@item.userId" class="text-decoration-none text-info"><img class="myIcon" src="/IconSvg/user.svg" title="用户" /> @item.Email</a></span>
-                                <span><img class="myIcon" src="/IconSvg/calendar.svg" title="创建日期" /> @item.CreateTime</span>
-                                <span><img class="myIcon" src="/IconSvg/like.svg" title="喜欢" />@item.GoodCount</span>
-                                <span><img class="myIcon" src="/IconSvg/hate.svg" title="不喜欢" />@item.BadCount</span>
+                                <span title="用户"><a href="/Home/UserDetails?id=@item.userId" class="text-decoration-none text-info"><svg class="myIcon" style="fill:#d66063"><use xlink:href="/IconSvg/data.svg#user"></use></svg>@item.Email</a></span>
+                                <span title="创建时间"><svg class="myIcon" style="fill:#000000"><use xlink:href="/IconSvg/data.svg#calendar"></use></svg>@item.CreateTime</span>
+                                <span title="喜欢"><svg class="myIcon" style="fill:#d4237a"><use xlink:href="/IconSvg/data.svg#like"></use></svg>@item.GoodCount</span>
+                                <span title="不喜欢"><svg class="myIcon" style="fill:#13227a"><use xlink:href="/IconSvg/data.svg#hate"></use></svg>@item.BadCount</span>
                             </div>
                             <div id="categories">
                                 @for (int i = 0; i < item.CategoryIds.Count(); i++)
@@ -176,7 +176,7 @@
                             '<div class="col-8 position-static">' +
                             '<div class="card-body">' +
                             '<h5 class="card-title">' + data[k].Title + '</h5>' +
-                            '<p class="card-text">' + data[k].Content + '</p>' +
+                            '<p class="card-text">' + data[k].IntroContent + '</p>' +
                             '<p class="card-text"><small class="text-muted">' + data[k].Email + ' 发布于 ' + dateOfBirth + '</small></p>' +
                             '<a href="/Article/ArticleDetails/' + data[k].Id + '" class="stretched-link">继续阅读</a>' +
                             '</div>' +

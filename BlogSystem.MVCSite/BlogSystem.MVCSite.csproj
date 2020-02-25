@@ -164,13 +164,9 @@
     <Compile Include="Tools\Md5Helper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="IconSvg\delete.svg" />
-    <Content Include="IconSvg\edit.svg" />
-    <Content Include="IconSvg\flow.svg" />
-    <Content Include="IconSvg\hate.svg" />
+    <Content Include="IconSvg\data.svg" />
     <Content Include="IconSvg\blog.ico" />
     <Content Include="IconSvg\blog.png" />
-    <Content Include="IconSvg\calendar.svg" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
     <Content Include="Content\bootstrap-reboot.css" />
@@ -180,13 +176,9 @@
     <Content Include="Content\carousel.css" />
     <Content Include="Content\signin.css" />
     <Content Include="Content\spaces.css" />
-    <Content Include="IconSvg\favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
-    <Content Include="IconSvg\image.svg" />
-    <Content Include="IconSvg\user.svg" />
-    <Content Include="Image\default.png" />
-    <Content Include="IconSvg\like.svg" />
+    <Content Include="Image\default.jpg" />
     <Content Include="Plugin\editor.md\css\editormd.css" />
     <Content Include="Plugin\editor.md\css\editormd.logo.css" />
     <Content Include="Plugin\editor.md\css\editormd.logo.min.css" />
@@ -818,7 +810,6 @@
     <Content Include="Scripts\umd\popper-utils.min.js" />
     <Content Include="Scripts\umd\popper.js" />
     <Content Include="Scripts\umd\popper.min.js" />
-    <Content Include="IconSvg\signup.svg" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

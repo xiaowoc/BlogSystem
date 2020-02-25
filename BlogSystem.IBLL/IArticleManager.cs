@@ -42,7 +42,7 @@ namespace BlogSystem.IBLL
 
         Task RemoveCategory(Guid articleId);
 
-        Task EditArticle(Guid articleId, string title, string content, Guid[] categoryIds);
+        Task EditArticle(Guid articleId, string title, string content,string introContent, Guid[] categoryIds);
 
         Task<bool> ExistsArticle(Guid articleId);
 

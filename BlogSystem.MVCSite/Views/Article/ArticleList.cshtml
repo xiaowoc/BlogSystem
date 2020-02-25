@@ -39,15 +39,15 @@
                                 <a href="/Article/ArticleDetails/@item.Id" class=" text-decoration-none">@item.Title</a>
                             </strong>
                             <div class="py-2">
-                                <p class="h6">@item.Content</p>
+                                <p class="h6">@item.IntroContent</p>
                             </div>
                             <div>
-                                <span><img class="myIcon" src="/IconSvg/calendar.svg" title="创建日期" /> @item.CreateTime</span>
-                                <span><img class="myIcon" src="/IconSvg/like.svg" title="喜欢" />@item.GoodCount</span>
-                                <span><img class="myIcon" src="/IconSvg/hate.svg" title="不喜欢" />@item.BadCount</span>
+                                <span title="创建日期"><svg class="myIcon" style="fill:#000000"><use xlink:href="/IconSvg/data.svg#calendar"></use></svg>@item.CreateTime</span>
+                                <span title="喜欢"><svg class="myIcon" style="fill:#d4237a"><use xlink:href="/IconSvg/data.svg#like"></use></svg>@item.GoodCount</span>
+                                <span title="不喜欢"><svg class="myIcon" style="fill:#13227a"><use xlink:href="/IconSvg/data.svg#hate"></use></svg>@item.BadCount</span>
                                 @if (ViewBag.IsCurrentUser)
                                 {
-                                    <a href="/Article/EditArticle/@item.Id"><img class="myIcon" src="/IconSvg/edit.svg" title="编辑" /></a>
+                                    <a href="/Article/EditArticle/@item.Id" title="编辑"><svg class="myIcon" style="fill:#f9d17c"><use xlink:href="/IconSvg/data.svg#edit"></use></svg></a>
                                 }
                                 <div class="d-none" id="confirmDeleteSpan_@item.Id">
                                     <span class="badge badge-warning">确认是否删除？</span>
@@ -57,7 +57,7 @@
                                 <div class="d-inline" id="deleteSpan_@item.Id">
                                     @if (ViewBag.IsCurrentUser)
                                     {
-                                        <a href="javascript:void(0);" onclick="confirmDelete('@item.Id',true)"><img class="myIcon" src="/IconSvg/delete.svg" title="删除" /></a>
+                                        <a href="javascript:void(0);" onclick="confirmDelete('@item.Id',true)" title="删除"><svg class="myIcon" style="fill:#d81e06"><use xlink:href="/IconSvg/data.svg#delete"></use></svg></a>
                                     }
                                 </div>
                             </div>
