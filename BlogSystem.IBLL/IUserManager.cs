@@ -38,5 +38,7 @@ namespace BlogSystem.IBLL
         Task<string> ResetPassword(string token, Guid userId, string password);
 
         Task<List<UserInformationDto>> GetFamousUser(int count);
+
+        Task<int> GetUserDataCount();
     }
 }

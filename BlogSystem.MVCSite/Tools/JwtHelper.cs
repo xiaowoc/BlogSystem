@@ -3,6 +3,7 @@ using JWT.Algorithms;
 using JWT.Serializers;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Web;
 
@@ -12,7 +13,7 @@ namespace BlogSystem.MVCSite.Tools
     {
         //私钥  web.config中配置
         //"GQDstcKsx0NHjPOuXOYg5MbeJ1XT0uFiwDVvVBrk";
-        private static string secret = "xiaowo";
+        private static string secret = ConfigurationManager.AppSettings["Secret"].ToString();
 
         /// <summary>
         /// 生成JwtToken

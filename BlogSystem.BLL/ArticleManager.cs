@@ -308,6 +308,14 @@ namespace BlogSystem.BLL
             }
         }
 
+        public async Task<int> GetArticleDataCount()
+        {
+            using (IArticleService articleSvc = new ArticleService())
+            {
+                return await articleSvc.GetAll().CountAsync();
+            }
+        }
+
         public async Task<int> GetArticleDataCount(Guid id)
         {
             using (IArticleService articleSvc = new ArticleService())

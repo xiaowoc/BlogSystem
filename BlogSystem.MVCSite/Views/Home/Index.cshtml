@@ -132,12 +132,25 @@
                         </div>
                     }
                 </div>
+                <div class="whiteBlock">
+                    <p>归档</p>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>文章总计</span>
+                            <span class="badge badge-pill badge-info ">@ViewBag.ArticlesCount</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>用户总计</span>
+                            <span class="badge badge-pill badge-info ">@ViewBag.UsersCount</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-12">
-            <div class="whiteBlock">
+            <div class="whiteBlock pb-0">
                 <div id="cardList">
                     <div class="d-flex mb-2">
                         <p class="h4 d-inline">随机文章 </p> <button class="btn btn-outline-secondary ml-auto" onclick="GetArticles()">换一换</button>

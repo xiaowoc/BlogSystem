@@ -275,6 +275,7 @@ namespace BlogSystem.MVCSite.Controllers
                 JwtHelper.GetJwtDecode(Request.Cookies["userId"].Value, out userid, out message);
             }
             string userId = Session["userId"] == null ? userid : Session["userId"].ToString();
+            ViewBag.IsCurrentUser = userId.Trim() == "" ? false : user.Id == Guid.Parse(userId) ? true : false;//是否为当前登陆用户
             ViewBag.IsFocused = userId == "" ? false : await userManager.IsFocused(Guid.Parse(userId), user.Id);//id为空也视为没关注
             ViewBag.TenTags = await articleManager.GetCategoriesByCount(user.Id, 10);//返回10个分类
             return View(data);

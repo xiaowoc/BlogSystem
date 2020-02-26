@@ -414,5 +414,14 @@ namespace BlogSystem.BLL
                       }).Take(count).ToListAsync();
             }
         }
+
+        public async Task<int> GetUserDataCount()
+        {
+            using (IUserService userSvc = new UserService())
+            {
+                Guid allId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                return await userSvc.GetAll().Where(m => m.Id != allId).CountAsync();
+            }
+        }
     }
 }

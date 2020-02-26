@@ -24,6 +24,8 @@ namespace BlogSystem.IBLL
 
         Task<List<BlogCategoryDto>> GetAllCategoriesByUserId(Guid userId, int pageIndex, int pageSize);
 
+        Task<int> GetArticleDataCount();
+
         Task<int> GetArticleDataCount(Guid id);
 
         Task<int> GetArticleDataCount(Guid userId, Guid categoryId);

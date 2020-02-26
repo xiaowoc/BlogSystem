@@ -42,6 +42,10 @@
                 <button class="btn btn-outline-white pl-0" id="btnHate" title="不喜欢" onclick="BtnBadHandle(this)">
                     <svg class="myIcon" style="fill:#13227a"><use xlink:href="/IconSvg/data.svg#hate"></use></svg><span id="hate">@Model.BadCount</span>
                 </button>
+                @if (ViewBag.IsCurrentUser)
+                {
+                    <a href="/Article/EditArticle/@Model.Id" class="btn" title="编辑"><svg class="myIcon" style="fill:#f9d17c"><use xlink:href="/IconSvg/data.svg#edit"></use></svg></a>
+                }
             </div>
             <div class="whiteBlock">
                 <h3 class="my-3">评论</h3>
@@ -72,8 +76,8 @@
                 <img class="rounded-circle m-2" style="width:88px;height:88px;border-radius:50%" src="~/Image/@userInfo.ImagePath" />
                 <p class="m-2">@userInfo.Email</p>
                 <p>@userInfo.Nickname</p>
-                <span class="badge badge-info">关注 @userInfo.FocusCount 人</span>
-                <span class="badge badge-info">粉丝 @userInfo.FansCount 人</span>
+                <span class="badge badge-info">关注 <span id="focus">@userInfo.FocusCount</span> 人</span>
+                <span class="badge badge-info">粉丝 <span id="fans">@userInfo.FansCount</span> 人</span>
                 @if (ViewBag.IsFocused)//已关注
                 {
                     <a href="javascript:void(0);" id="btnunFocus" class="badge badge-secondary">√ 已关注</a>
@@ -164,6 +168,10 @@
                 tocContainer: "#custom-toc-container",//设置导航栏容器
                 tocDropdown: false,//是否是以下拉框形式的目录
             });//获取文章内容
+
+            $("nav").removeClass("fixed-top");//卸载子样式，固定导航栏
+
+            $("body").css("padding-top","0")//body取消顶部留空
         })
 
         function GetLikeHate() {
@@ -286,6 +294,7 @@
                     if (data.status == "ok") {
                         $("#btnFocus").text('√ 已关注');//修改显示内容
                         $("#btnFocus").attr('class', 'badge badge-secondary');//更换显示class
+                        $("#fans").text(parseInt($("#fans").html()) + 1);//数量+1
                         $("#btnFocus").unbind();//取消绑定事件
                         $("#btnFocus").attr('id', 'btnunFocus');//id修改
                         $("#btnunFocus").hover(function () {//再给新id绑定hover事件
@@ -319,6 +328,7 @@
                     if (data.status == "ok") {
                         $("#btnunFocus").text('关注');
                         $("#btnunFocus").attr('class', 'badge badge-danger');
+                        $("#fans").text(parseInt($("#fans").html()) - 1);//数量-1
                         $("#btnunFocus").unbind();
                         $("#btnunFocus").attr('id', 'btnFocus');
                         $("#btnFocus").on('click', function () {

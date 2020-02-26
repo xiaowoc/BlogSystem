@@ -60,7 +60,18 @@
                     <div class="input-group">
                         <input id="searchWord" name="searchWord" type="text" class="form-control" placeholder="" aria-label="" aria-describedby="button-addon2">
                         <div class="input-group-append">
-                            <button class="btn btn-outline-secondary" type="submit" id="button-addon2">搜索</button>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-secondary" type="submit" id="button-addon2">搜索</button>
+                                @*<button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="#">标题和用户名(默认)</a>
+                                    <div role="separator" class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#">标题</a>
+                                    <a class="dropdown-item" href="#">用户名</a>
+                                </div>*@
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -83,7 +94,7 @@
         </div>
     </nav>
 
-    <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;z-index:100;">
+    <div class="toast position-fixed mx-auto" data-delay="2000" role="alert" aria-live="assertive" aria-atomic="true" style="left:0;right:0;top:20%;z-index:100;z-index:2000;">
         <div class="toast-header">
             <strong class="mr-auto">提示</strong>
             <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
@@ -217,12 +228,6 @@
             </div>
         </footer>*@
     @RenderSection("scripts", required: false)
-    @*<script>
-            $(function () {
-                // 解决bootstrap下拉菜单第一次点击无反应问题
-                $('.dropdown-toggle').dropdown();
-            });
-        </script>*@
     <script>
         function AddCategory() {
             var categoryName = $("#CategoryName").val();
@@ -328,7 +333,11 @@
 
         $(function () {
             $(".toast").hide();
+
+             // 解决bootstrap下拉菜单第一次点击无反应问题
+            $('.dropdown-toggle').dropdown();
         })
+
         $(".toast").on('hidden.bs.toast', function () {
             $(".toast").hide();
         });

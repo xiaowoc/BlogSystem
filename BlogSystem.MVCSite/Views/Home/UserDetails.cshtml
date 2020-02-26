@@ -119,8 +119,8 @@
                     <p class="my-2">@Model.Email</p>
                     <p class="my-2" style="display:@(isCurrentUser?"none":"block");">@Model.Nickname</p>
                     <input id="nickName" class="w-100 text-center my-2" type="text" placeholder="编辑昵称" value="@Model.Nickname" style="border-radius:4px;border:1px solid transparent;display:@(isCurrentUser?"block":"none");" maxlength="30">
-                    <span class="badge badge-info">关注 @Model.FocusCount 人</span>
-                    <span class="badge badge-info">粉丝 @Model.FansCount 人</span>
+                    <span class="badge badge-info">关注 <span id="focus">@Model.FocusCount</span> 人</span>
+                    <span class="badge badge-info">粉丝 <span id="fans">@Model.FansCount</span> 人</span>
                     @if (ViewBag.IsFocused)//已关注
                     {
                         <a href="javascript:void(0);" id="btnunFocus" class="badge badge-secondary">√ 已关注</a>
@@ -337,6 +337,7 @@
                     if (data.status == "ok") {
                         $("#btnFocus").text('√ 已关注');//修改显示内容
                         $("#btnFocus").attr('class', 'badge badge-secondary');//更换显示class
+                        $("#fans").text(parseInt($("#fans").html()) + 1);//数量+1
                         $("#btnFocus").unbind();//取消绑定事件
                         $("#btnFocus").attr('id', 'btnunFocus');//id修改
                         $("#btnunFocus").hover(function () {//再给新id绑定hover事件
@@ -369,6 +370,7 @@
                     if (data.status == "ok") {
                         $("#btnunFocus").text('关注');
                         $("#btnunFocus").attr('class', 'badge badge-danger');
+                        $("#fans").text(parseInt($("#fans").html()) - 1);//数量-1
                         $("#btnunFocus").unbind();
                         $("#btnunFocus").attr('id', 'btnFocus');
                         $("#btnFocus").on('click', function () {

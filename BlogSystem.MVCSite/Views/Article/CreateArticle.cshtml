@@ -9,7 +9,16 @@
         <div class="col-md-3">
             <div class="whiteBlock px-0">
                 <div class="text-center">
-                    <button class="btn btn-outline-success" data-toggle="modal" data-target=".modalCreateArticle">保存</button>
+
+                    <div class="btn-group" role="group">
+                        <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            保存
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                            <button class="dropdown-item" data-toggle="modal" data-target=".modalCreateArticle">提交到博客</button>
+                            <button class="dropdown-item" onclick="CheckCookie(false)">提交到临时草稿</button>
+                        </div>
+                    </div>
                     <button class="btn btn-outline-info" onclick="ReFreshCategory('@ViewBag.UserId')">刷新分类</button>
                 </div>
                 <hr />
@@ -56,28 +65,43 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade modalCookie" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">消息</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="modalCookieText" class="text-center"></p>
+                    <p class="text-center text-muted"><small>(提交新文章成功后将清空临时草稿)</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-success" id="modalCookieBtnFirst" data-dismiss="modal">确认</button>
+                    <button type="button" class="btn btn-success" id="modalCookieBtn" data-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 @section headers{
     <link href="/Plugin/editor.md/css/editormd.min.css" rel="stylesheet" />
 }
 
 @section Scripts {
-    <script src="/Plugin/editor.md/editormd.min.js"></script>
+    <script src="~/Plugin/editor.md/editormd.min.js"></script>
+    <script src="~/Scripts/jquery.cookie-1.4.1.min.js"></script>
     <script>
-        ////页面关闭提示
-        //window.onbeforeunload = function (e) {
-        //    e = e || window.event;
-        //    // 兼容IE8和Firefox 4之前的版本
-        //    if (e) {
-        //        e.returnValue = '关闭提示';
-        //    }
-        //    // Chrome, Safari, Firefox 4+, Opera 12+ , IE 9+
-        //    return true;
-        //};
+        var Editormd;
         $(function () {
             ReFreshCategory('@ViewBag.UserId', true);//第一次获取所有分类，成功不弹提示
 
-            editormd("editor", {
+            Editormd = editormd("editor", {
                 width: "100%",
                 height: "100%",
                 tocContainer: "#custom-toc-container",
@@ -85,10 +109,42 @@
                 path: "/Plugin/editor.md/lib/"
             });
 
-            $(window).bind('beforeunload',function(){return '您输入的内容尚未保存，确定离开此页面吗？';});
+            $("#modalCookieBtnFirst").on("click", function () {
+                //删除旧的编辑器
+                Editormd.editor.remove();
+                //新建带有cookie值的编辑器
+                $.getScript("/Plugin/editor.md/editormd.min.js", function () {
+                    $(".vh-85").append("<div id=\"editor\"><textarea style=\"display:none;\"></textarea></div>");
+                    //新建一个已赋值草稿的编辑器
+                    editormd("editor", {
+                        markdown: $.cookie("CreateArticle"),
+                        width: "100%",
+                        height: "100%",
+                        tocContainer: "#custom-toc-container",
+                        tocDropdown: false,
+                        path: "/Plugin/editor.md/lib/"
+                    });
+                })
+            });
+
+            $("#modalCookieBtn").on("click", function () {
+                //删除旧的cookie
+                $.removeCookie("CreateArticle");
+                //再保存新的cookie
+                $.cookie("CreateArticle", $(".editormd-markdown-textarea").val());
+            });
+
+            CheckCookie(true);//第一次检测提示是否调用
+
+            $(window).bind('beforeunload', function () { return '您输入的内容尚未保存，确定离开此页面吗？'; });
         });
 
         function ReFreshCategory(userId, isFirst) {
+            if (userId == '') {
+                $(".toast-body").text("获取用户信息失败，请检查登陆状态");
+                $(".toast").show();
+                $(".toast").toast('show');
+            }
             $.ajax({
                 url: "/Article/GetMoreCategories",
                 type: "get",
@@ -152,6 +208,8 @@
                 data: { title, content, introContent, categoryIds },
                 success: function (data) {
                     if (data.status == "ok") {
+                        //删除cookie信息
+                        $.removeCookie("CreateArticle");
                         //跳转到文章详情页
                         $(window).unbind('beforeunload');
                         window.location ="http://"+ window.location.host + "/Article/ArticleDetails?id="+data.articleId;
@@ -162,6 +220,28 @@
                     }
                 }
             })
+        }
+
+        function CheckCookie(isFirst) {//检测是否有cookie信息
+            if ($.cookie("CreateArticle") != undefined) {//如果有草稿
+                if (isFirst) {//第一次检测是否需要调用
+                    $("#modalCookieBtnFirst").show();
+                    $("#modalCookieBtn").hide();
+                    $("#modalCookieText").text("检测到有未提交的文章，是否调用？");
+                } else {//后续检测提示是否需要覆盖
+                    $("#modalCookieBtn").show();
+                    $("#modalCookieBtnFirst").hide();
+                    $("#modalCookieText").text("检测到有未提交的文章，是否覆盖？");
+                }
+                $(".modalCookie").modal("show");
+            } else {//没有草稿
+                if (!isFirst) {//后续检测到没有草稿直接提交
+                    $.cookie("CreateArticle", $(".editormd-markdown-textarea").val());
+                    $(".toast-body").text("提交到临时草稿成功！");
+                    $(".toast").show();
+                    $(".toast").toast('show');
+                }
+            }
         }
     </script>
 }

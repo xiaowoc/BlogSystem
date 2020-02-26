@@ -6,7 +6,7 @@
 }
 
 <div class="container-xl body-content">
-    <div class="whiteBlock">
+    <div class="whiteBlock pb-0">
         @if (Model.Count<BlogSystem.DTO.ArticleDto>() != 0)
         {
             <div class="d-flex mb-2">
@@ -37,7 +37,7 @@
             <div class="text-center">什么都没有哦!</div>
         }
         <nav>
-            <ul class="pagination justify-content-center">
+            <ul class="pagination justify-content-center pb-1">
                 @if (ViewBag.PageCount == 0 || ViewBag.PageCount == 1)
                 {
                 }

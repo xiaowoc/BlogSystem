@@ -21,7 +21,9 @@ namespace BlogSystem.MVCSite.Controllers
         {
             IArticleManager articleManager = new ArticleManager();
             IUserManager userManager = new UserManager();
-            ViewBag.PopularUser = await userManager.GetFamousUser(20);
+            ViewBag.PopularUser = await userManager.GetFamousUser(10);
+            ViewBag.ArticlesCount = await articleManager.GetArticleDataCount();//查找文章总数
+            ViewBag.UsersCount = await userManager.GetUserDataCount();//查找用户总数
             return View(await articleManager.GetFamousArticle(5));
         }
 
