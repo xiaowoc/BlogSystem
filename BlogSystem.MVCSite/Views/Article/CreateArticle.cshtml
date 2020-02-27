@@ -16,7 +16,8 @@
                         </button>
                         <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
                             <button class="dropdown-item" data-toggle="modal" data-target=".modalCreateArticle">提交到博客</button>
-                            <button class="dropdown-item" onclick="CheckCookie(false)">提交到临时草稿</button>
+                            <button class="dropdown-item" id="AddCookieBtn">提交到临时草稿</button>
+                            <button class="dropdown-item" id="CookieContentBtn">查看临时草稿内容</button>
                         </div>
                     </div>
                     <button class="btn btn-outline-info" onclick="ReFreshCategory('@ViewBag.UserId')">刷新分类</button>
@@ -60,7 +61,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-                    <button type="button" onclick="AddArticle()" class="btn btn-success" data-dismiss="modal">提交</button>
+                    <button type="button" id="AddArticleBtn" class="btn btn-success" data-dismiss="modal">提交</button>
                 </div>
             </div>
         </div>
@@ -107,6 +108,18 @@
                 tocContainer: "#custom-toc-container",
                 tocDropdown: false,
                 path: "/Plugin/editor.md/lib/"
+            });
+
+            $("#AddCookieBtn").on("click", function () {
+                CheckCookie(false);
+            });
+
+            $("#AddArticleBtn").on("click", function () {
+                AddArticle();
+            });
+
+            $("#CookieContentBtn").on("click", function () {
+                CookieContent();
             });
 
             $("#modalCookieBtnFirst").on("click", function () {
@@ -242,6 +255,10 @@
                     $(".toast").toast('show');
                 }
             }
+        }
+
+        function CookieContent() {//查看草稿里的内容
+            alert($.cookie("CreateArticle"));
         }
     </script>
 }

@@ -132,7 +132,7 @@ namespace BlogSystem.BLL
             }
         }
 
-        public async Task EditArticle(Guid articleId, string title, string content,string introContent, Guid[] categoryIds)
+        public async Task EditArticle(Guid articleId, string title, string content, string introContent, Guid[] categoryIds)
         {
             using (IArticleService articleSvc = new ArticleService())
             {
@@ -332,11 +332,27 @@ namespace BlogSystem.BLL
             }
         }
 
-        public async Task<int> GetSearchArticleDataCount(string searchWord)
-        {
+        public async Task<int> GetSearchArticleDataCount(string searchWord, int searchType)
+        {//searchType:0-查用户名和标题 1-查标题 2-查用户名
             using (IArticleService articleSvc = new ArticleService())
             {
-                return await articleSvc.GetAll().CountAsync(m => m.Title.Contains(searchWord) || m.User.Email.Contains(searchWord));
+                if (searchType == 0)//查用户名和标题
+                {
+                    return await articleSvc.GetAll().CountAsync(m => m.Title.Contains(searchWord) || m.User.Email.Contains(searchWord));
+                }
+                else if (searchType == 1)//查标题
+                {
+                    return await articleSvc.GetAll().CountAsync(m => m.Title.Contains(searchWord));
+                }
+                else if (searchType == 2)//查用户名
+                {
+                    return await articleSvc.GetAll().CountAsync(m => m.User.Email.Contains(searchWord));
+                }
+                else
+                {
+                    return 0;
+                }
+
             }
         }
 
@@ -357,7 +373,7 @@ namespace BlogSystem.BLL
                 {
                     Id = m.Id,
                     Title = m.Title,
-                    IntroContent=m.IntroContent,
+                    IntroContent = m.IntroContent,
                     Content = m.Content,
                     CreateTime = m.CreatTime,
                     Email = m.User.Email,
@@ -645,25 +661,61 @@ namespace BlogSystem.BLL
         /// <summary>
         /// 从所有文章中查找符合查找内容和对应数量的文章
         /// </summary>
+        /// <param name="searchWord">关键字</param>
+        /// <param name="searchType">查询类型（0-查用户名和标题 1-查标题 2-查用户名）</param>
         /// <param name="pageIndex">索引</param>
         /// <param name="pageSize">数量</param>
         /// <returns></returns>
-        public async Task<List<ArticleDto>> GetAllSearchArticles(string searchWord, int pageIndex, int pageSize)
-        {
+        public async Task<List<ArticleDto>> GetAllSearchArticles(string searchWord, int searchType, int pageIndex, int pageSize)
+        {//searchType:0-查用户名和标题 1-查标题 2-查用户名
             using (IArticleService articleSvc = new ArticleService())
             {
-                var list = await articleSvc.GetAllByPageOrder(pageSize, pageIndex, m => m.Title.Contains(searchWord) || m.User.Email.Contains(searchWord), false).Include(m => m.User).Select(m => new ArticleDto()
+                List<ArticleDto> list = null;
+                if (searchType == 0)//查用户名和标题
                 {
-                    Title = m.Title,
-                    GoodCount = m.GoodCount,
-                    BadCount = m.BadCount,
-                    Email = m.User.Email,
-                    Content = m.IntroContent,
-                    CreateTime = m.CreatTime,
-                    Id = m.Id,
-                    imagePath = m.User.ImagePath,
-                    userId = m.User.Id
-                }).ToListAsync();
+                    list = await articleSvc.GetAllByPageOrder(pageSize, pageIndex, m => m.Title.Contains(searchWord) || m.User.Email.Contains(searchWord), false).Include(m => m.User).Select(m => new ArticleDto()
+                    {
+                        Title = m.Title,
+                        GoodCount = m.GoodCount,
+                        BadCount = m.BadCount,
+                        Email = m.User.Email,
+                        Content = m.IntroContent,
+                        CreateTime = m.CreatTime,
+                        Id = m.Id,
+                        imagePath = m.User.ImagePath,
+                        userId = m.User.Id
+                    }).ToListAsync();
+                }
+                else if (searchType == 1)//查标题
+                {
+                    list = await articleSvc.GetAllByPageOrder(pageSize, pageIndex, m => m.Title.Contains(searchWord), false).Include(m => m.User).Select(m => new ArticleDto()
+                    {
+                        Title = m.Title,
+                        GoodCount = m.GoodCount,
+                        BadCount = m.BadCount,
+                        Email = m.User.Email,
+                        Content = m.IntroContent,
+                        CreateTime = m.CreatTime,
+                        Id = m.Id,
+                        imagePath = m.User.ImagePath,
+                        userId = m.User.Id
+                    }).ToListAsync();
+                }
+                else if (searchType == 2)//查用户名
+                {
+                    list = await articleSvc.GetAllByPageOrder(pageSize, pageIndex, m => m.User.Email.Contains(searchWord), false).Include(m => m.User).Select(m => new ArticleDto()
+                    {
+                        Title = m.Title,
+                        GoodCount = m.GoodCount,
+                        BadCount = m.BadCount,
+                        Email = m.User.Email,
+                        Content = m.IntroContent,
+                        CreateTime = m.CreatTime,
+                        Id = m.Id,
+                        imagePath = m.User.ImagePath,
+                        userId = m.User.Id
+                    }).ToListAsync();
+                }
 
                 using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
                 {

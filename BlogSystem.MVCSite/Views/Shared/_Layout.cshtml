@@ -62,15 +62,16 @@
                         <div class="input-group-append">
                             <div class="btn-group">
                                 <button class="btn btn-outline-secondary" type="submit" id="button-addon2">搜索</button>
-                                @*<button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="sr-only">Toggle Dropdown</span>
+                                <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="sr-only">下拉选项开关</span>
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="#">标题和用户名(默认)</a>
+                                    <a class="dropdown-item active" href="javascript:void(0);" onclick="ChangeSearchType(this,'0')">标题和用户名(默认)</a>
                                     <div role="separator" class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="#">标题</a>
-                                    <a class="dropdown-item" href="#">用户名</a>
-                                </div>*@
+                                    <a class="dropdown-item" href="javascript:void(0);" onclick="ChangeSearchType(this,'1')">标题</a>
+                                    <a class="dropdown-item" href="javascript:void(0);" onclick="ChangeSearchType(this,'2')">用户名</a>
+                                </div>
+                                <input type="hidden" id="searchType" name="searchType" value="0"/>
                             </div>
                         </div>
                     </div>
@@ -319,16 +320,20 @@
             })
         }
 
+        function ChangeSearchType(btn,value) {
+            if (!$(btn).hasClass("active")) {
+                $(btn).addClass("active");
+                $(btn).siblings("a").removeClass("active");
+                $("#searchType").val(value);
+            }
+        }
+
         function RegisterHide() {
-            $(function () {
-                $('.modalRegister').modal('hide')
-            });
+            $('.modalRegister').modal('hide');
         }
 
         function LoginHide() {
-            $(function () {
-                $('.modalLogin').modal('hide')
-            });
+            $('.modalLogin').modal('hide');
         }
 
         $(function () {

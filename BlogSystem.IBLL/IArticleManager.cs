@@ -30,7 +30,7 @@ namespace BlogSystem.IBLL
 
         Task<int> GetArticleDataCount(Guid userId, Guid categoryId);
 
-        Task<int> GetSearchArticleDataCount(string searchWord);
+        Task<int> GetSearchArticleDataCount(string searchWord,int searchType);
 
         Task<int> GetCategoryDataCount(Guid id);
 
@@ -76,6 +76,6 @@ namespace BlogSystem.IBLL
 
         Task<List<ArticleDto>> GetAllArticles(int pageIndex, int pageSize);
 
-        Task<List<ArticleDto>> GetAllSearchArticles(string searchWord, int pageIndex, int pageSize);
+        Task<List<ArticleDto>> GetAllSearchArticles(string searchWord,int searchType, int pageIndex, int pageSize);
     }
 }

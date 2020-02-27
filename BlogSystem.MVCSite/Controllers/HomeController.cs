@@ -515,21 +515,24 @@ namespace BlogSystem.MVCSite.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> Search(string searchWord, int pageIndex = 1, int pageSize = 10)
-        {
+        public async Task<ActionResult> Search(string searchWord, int searchType = 0, int pageIndex = 1, int pageSize = 10)
+        {//searchType:0-查用户名和标题 1-查标题 2-查用户名
             if (searchWord == "")
             {
                 ViewBag.PageCount = 0;//总页数
                 ViewBag.PageIndex = pageIndex;//当前页数
                 ViewBag.SearchWord = searchWord;//当前关键字
+                ViewBag.SearchType = searchType;//当前类型
                 return View(new List<ArticleDto>());
             }
             IArticleManager articleManager = new ArticleManager();
-            List<ArticleDto> data = await articleManager.GetAllSearchArticles(searchWord, pageIndex - 1, pageSize);
-            int dataCount = await articleManager.GetSearchArticleDataCount(searchWord);//符合搜索的文章总数
+            List<ArticleDto> data = await articleManager.GetAllSearchArticles(searchWord, searchType, pageIndex - 1, pageSize);
+            int dataCount = await articleManager.GetSearchArticleDataCount(searchWord, searchType);//符合搜索的文章总数
             ViewBag.PageCount = dataCount % pageSize == 0 ? dataCount / pageSize : dataCount / pageSize + 1;//总页数
+            ViewBag.DataCount = dataCount;//匹配数量
             ViewBag.PageIndex = pageIndex;//当前页数
             ViewBag.SearchWord = searchWord;//当前关键字
+            ViewBag.SearchType = searchType;//当前查询类型
             return View(data);
         }
 
