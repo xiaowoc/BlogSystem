@@ -89,6 +89,8 @@ StyleCopReport.xml
 *.scc
 *.png
 *.jpg
+Web.Debug.config
+Web.Release.config
 
 # Chutzpah Test files
 _Chutzpah*
