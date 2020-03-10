@@ -52,4 +52,37 @@
   </connectionStrings>
 ```
 
+**-----2020-3-10更新-----**
+
+项目为了兼容vue，在部分内容中增加配置
+
+**在`BlogSystem / BlogSystem.MVCSite / Web.config`中配置重置密码对应的链接**
+
+将原来的：
+```xml
+<appSettings>
+    <add key="Url" value="（当前的地址或者服务器地址）" />
+    <!--邮箱附带的重置密码连接地址-->
+  </appSettings>
+```
+更改为：
+```xml
+<appSettings>
+    <add key="MvcUrl" value="（mvc部署地址）" />
+    <add key="ApiUrl" value="（vue部署的地址）" />
+    <!--邮箱附带的重置密码连接地址-->
+  </appSettings>
+```
+
+**在相应的控制器中配置允许跨域的地址**
+
+以下为HomeController的例子：
+```csharp
+[ControllerAllowOrigin(AllowSites = new string[] { "（地址1）", "（地址2）"})]
+    public class HomeController : Controller
+    {
+	}
+```
+
+
 **配置完成后可以通过EF的迁移服务生成相应的数据库！**
