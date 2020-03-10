@@ -77,6 +77,14 @@
                 }
                 <nav class="mt-3">
                     <ul class="pagination pb-1">
+                        @{ 
+                            var category=ViewBag.Category;
+                            string categoryHtml = "";
+                            if (category != null)
+                            {
+                                categoryHtml = "&categoryId="+category.Id+"";
+                            }
+                        }
                         @if (ViewBag.PageCount == 0 || ViewBag.PageCount == 1)
                         {
                         }
@@ -86,7 +94,7 @@
                             if (ViewBag.PageIndex != 1)
                             {
                                 <li class="page-item">
-                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
+                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId@categoryHtml&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
                                 </li>
                             }
                             //实际页数小于可显示页数
@@ -101,7 +109,7 @@
                                 else
                                 {
                                     <li class="page-item">
-                                        <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
+                                        <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId@categoryHtml&pageIndex=@i">@i</a>
                                     </li>
                                 }
                             }
@@ -109,7 +117,7 @@
                             if (ViewBag.PageIndex != ViewBag.PageCount)
                             {
                                 <li class="page-item">
-                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
+                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId@categoryHtml&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
                                 </li>
                             }
                         }
@@ -119,7 +127,7 @@
                             if (ViewBag.PageIndex != 1)
                             {
                                 <li class="page-item">
-                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
+                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId@categoryHtml&pageIndex=@(ViewBag.PageIndex-1)">上一页</a>
                                 </li>
                             }
                             //实际页数大于可显示页数，这时得分三种情况
@@ -138,7 +146,7 @@
                                     else
                                     {
                                         <li class="page-item">
-                                            <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
+                                            <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId@categoryHtml&pageIndex=@i">@i</a>
                                         </li>
                                     }
                                 }
@@ -157,7 +165,7 @@
                                     else
                                     {
                                         <li class="page-item">
-                                            <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
+                                            <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId@categoryHtml&pageIndex=@i">@i</a>
                                         </li>
                                     }
                                 }
@@ -176,7 +184,7 @@
                                     else
                                     {
                                         <li class="page-item">
-                                            <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@i">@i</a>
+                                            <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId@categoryHtml&pageIndex=@i">@i</a>
                                         </li>
                                     }
                                 }
@@ -185,7 +193,7 @@
                             if (ViewBag.PageIndex != ViewBag.PageCount)
                             {
                                 <li class="page-item">
-                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
+                                    <a class="page-link" href="/Article/ArticleList?userId=@ViewBag.RequestId@categoryHtml&pageIndex=@(ViewBag.PageIndex+1)">下一页</a>
                                 </li>
                             }
                         }

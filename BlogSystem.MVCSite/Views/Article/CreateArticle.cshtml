@@ -169,7 +169,7 @@
                         if (data.data.length != 0) {
                             for (var i = 0; i < data.data.length; i++) {
                                 var tag = data.data[i];
-                                categoriesHtml += '<span class="custom-control custom-checkbox d-inline mr-3"><input class="custom-control-input" type="checkbox" name="categoryIds" value="' + tag.Id + '" id="' + tag.Id + '" /><label class="custom-control-label" for="' + tag.Id + '">' + tag.BlogCategoryName + '</label></span>';
+                                categoriesHtml += '<div class="custom-checkbox form-check form-check-inline pl-4"><input class="custom-control-input" type="checkbox" name="categoryIds" value="' + tag.Id + '" id="' + tag.Id + '" /><label class="custom-control-label" for="' + tag.Id + '">' + tag.BlogCategoryName + '</label></div>';
                             }
                         } else {
                             categoriesHtml += '<span class="text-black-50"><small>暂无分类，请在\'添加分类\'中添加。</small></span>';

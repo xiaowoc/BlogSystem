@@ -104,15 +104,18 @@ namespace BlogSystem.MVCSite.Tools
 
         }
         //默认发送格式  
-        public static bool SendEmailDefault(string ToEmail, string token)
+        public static bool SendEmailDefault(string ToEmail,string url)
         {
+            if (ConfigurationManager.AppSettings["EmailName"].ToString()==""|| ConfigurationManager.AppSettings["EmailService"].ToString()==""||ConfigurationManager.AppSettings["EmailName"].ToString()==""||ConfigurationManager.AppSettings["EmailPass"].ToString()=="")
+            {
+                return false;
+            }
             StringBuilder MailContent = new StringBuilder();
             MailContent.Append("亲爱的用户：<br/>");
             MailContent.Append("    您好！你于");
             MailContent.Append(DateTime.Now.ToString("yyyy-MM-dd HH:MM:ss"));
             MailContent.Append("申请找回密码。<br/>");
             MailContent.Append("　　　为了安全起见，请用户点击以下链接重设个人密码：<br/><br/>");
-            string url = ConfigurationManager.AppSettings["Url"].ToString() + "/Home/ResetPassword?Token=" + token;
             MailContent.Append("<a href='" + url + "'>" + url + "</a><br/><br/>");
             MailContent.Append(" (如果无法点击该URL链接地址，请将它复制并粘帖到浏览器的地址输入框，然后单击回车即可。)");
             return SendHtml(ConfigurationManager.AppSettings["EmailName"].ToString(), "博客管理中心", ToEmail, "找回密码", MailContent.ToString(), ConfigurationManager.AppSettings["EmailService"].ToString(), ConfigurationManager.AppSettings["EmailName"].ToString(), ConfigurationManager.AppSettings["EmailPass"].ToString()); //这是从webconfig中自己配置的。

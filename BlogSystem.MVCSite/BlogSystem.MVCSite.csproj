@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+О╩©<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
@@ -142,6 +142,7 @@
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Filters\BlogSystemAuthAttribute.cs" />
+    <Compile Include="Filters\ControllerAllowOriginAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -807,7 +808,7 @@
   </ProjectExtensions>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
-      <ErrorText>уБл╗╪фкЦ╩Зиох╠иы╢коНд©рЩсц╣д NuGet ЁлпР╟Э║ёй╧сц║╟NuGet ЁлпР╟Э╩╧т╜║╠©иобтьуБп╘ЁлпР╟Э║ёсп╧ь╦Э╤Юпео╒ё╛гК╡н╪Ш http://go.microsoft.com/fwlink/?LinkID=322105║ёх╠иы╣днд╪Чйг {0}║ё</ErrorText>
+      <ErrorText>О©╫О©╫л╗О©╫О©╫О©╫О©╫О©╫О©╫О©╫х╠О©╫ы╢О©╫О©╫О©╫д©О©╫О©╫О©╫ц╣О©╫ NuGet О©╫О©╫О©╫О©╫О©╫О©╫О©╫й╧О©╫ц║О©╫NuGet О©╫О©╫О©╫О©╫О©╫О©╫О©╫т╜О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫п╘О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫п╧ь╦О©╫О©╫О©╫О©╫О©╫о╒О©╫О©╫О©╫О©╫н╪О©╫ http://go.microsoft.com/fwlink/?LinkID=322105О©╫О©╫х╠О©╫ы╣О©╫О©╫д╪О©╫О©╫О©╫ {0}О©╫О©╫</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
   </Target>

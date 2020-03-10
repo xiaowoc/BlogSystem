@@ -368,7 +368,7 @@
                     $(".toast-body").text(data.result);
                     $(".toast").toast('show');
                     if (data.status == "ok") {
-                        $("#btnunFocus").text('关注');
+                        $("#btnunFocus").text('点我关注');
                         $("#btnunFocus").attr('class', 'badge badge-danger');
                         $("#fans").text(parseInt($("#fans").html()) - 1);//数量-1
                         $("#btnunFocus").unbind();

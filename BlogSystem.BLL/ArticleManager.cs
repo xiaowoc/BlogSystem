@@ -595,7 +595,8 @@ namespace BlogSystem.BLL
                     Email = m.User.Email,
                     imagePath = m.User.ImagePath,
                     GoodCount = m.GoodCount,
-                    BadCount = m.BadCount
+                    BadCount = m.BadCount,
+                    userId = m.UserId
                 }).Take(count).ToListAsync();
                 using (IArticleToCategory articleToCategorySvc = new ArticleToCategoryService())
                 {
