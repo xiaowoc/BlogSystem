@@ -3,7 +3,7 @@
 
 1. **技术类型：Asp.Net MVC5、三层架构、EF6、Nlog、JQuery、Ajax、Bootstrap**
 
-1. **示例：134.175.185.129**
+1. **示例：[https://www.xiaowoc.cn](https://www.xiaowoc.cn "https://www.xiaowoc.cn")**
 
 1. **相关功能：注册、登陆、创建文章、编辑文章、个人文章列表、创建文章所属分类、个人文章分类列表、修改个人信息、修改密码、密码重置、文章点赞点踩、文章评论、用户关注、自定义错误页面、错误日志记录、搜索**
 
