@@ -199,6 +199,17 @@
         }
 
         function AddArticle() {
+            var title = $("#Title").val();
+            var content = $(".editormd-markdown-textarea").val();
+            var introContent = $("#IntroContent").val();
+            if (title == "" || content == "") {
+                $(".toast-body").text("提交内容不完整，请重新确认！");
+                $(".toast").show();
+                $(".toast").toast('show');
+                return false;
+            }
+            //禁用提交按钮，防止重复提交
+            $("#AddArticleBtn").attr("disabled","true");
             //创建一个数组
             var categoryIds = new Array();
             //获取所有选中的分类
@@ -211,9 +222,6 @@
                     categoryIds.push($(this).val());
                 });
             }
-            var title = $("#Title").val();
-            var content = $(".editormd-markdown-textarea").val();
-            var introContent = $("#IntroContent").val();
             $.ajax({
                 url: "/Article/AddArticle",
                 type: "post",
@@ -231,6 +239,8 @@
                         $(".toast").show();
                         $(".toast").toast('show');
                     }
+                    //解禁提交按钮
+                    $("#AddArticleBtn").removeAttr("disabled");
                 }
             })
         }

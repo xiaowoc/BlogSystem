@@ -179,6 +179,7 @@
     <Content Include="Content\spaces.css" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="IconSvg\备案图标.png" />
     <Content Include="Image\default.jpg" />
     <Content Include="Plugin\editor.md\css\editormd.css" />
     <Content Include="Plugin\editor.md\css\editormd.logo.css" />

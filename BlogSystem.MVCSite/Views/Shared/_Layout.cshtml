@@ -71,7 +71,7 @@
                                     <a class="dropdown-item" href="javascript:void(0);" onclick="ChangeSearchType(this,'1')">标题</a>
                                     <a class="dropdown-item" href="javascript:void(0);" onclick="ChangeSearchType(this,'2')">用户名</a>
                                 </div>
-                                <input type="hidden" id="searchType" name="searchType" value="0"/>
+                                <input type="hidden" id="searchType" name="searchType" value="0" />
                             </div>
                         </div>
                     </div>
@@ -122,7 +122,7 @@
                         <div class="form-group">
                             <label class="control-label" for="CategoryName">分类名称</label>
                             <div>
-                                <input class="form-control text-box single-line" data-val="true" data-val-length="字段 分类名称 必须是一个字符串，其最小长度为 2，最大长度为 200。" data-val-length-max="200" data-val-length-min="2" data-val-required="分类名称 字段是必需的。" id="CategoryName" name="CategoryName" type="text" value="">
+                                <input class="form-control text-box single-line" data-val="true" data-val-length="字段 分类名称 必须是一个字符串,最大长度为 200。" data-val-length-max="200" data-val-required="分类名称 字段是必需的。" id="CategoryName" name="CategoryName" type="text" value="">
                                 <span class="field-validation-valid text-danger" data-valmsg-for="CategoryName" data-valmsg-replace="true"></span>
                             </div>
                         </div>
@@ -171,7 +171,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-                        <button type="button" onclick="Register()" class="btn btn-success" data-dismiss="modal">注册</button>
+                        <button type="button" id="btnRegister" onclick="Register()" class="btn btn-success" data-dismiss="modal">注册</button>
                     </div>
                 </div>
             </div>
@@ -223,15 +223,32 @@
     }
 
     @RenderBody()
-    @*<footer class="footer py-3 bg-light">
-            <div class="container-xl">
-                <span class="text-muted">&copy; @DateTime.Now.Year - 我的 ASP.NET 应用程序</span>
+    <footer class="footer bg-light" style="bottom:0px;width:100%;height:26px;">
+        <div class="container-xl">
+            <span class="text-muted">&copy; @DateTime.Now.Year - 我的 ASP.NET 应用程序</span>
+            <div class="d-inline" style="width:300px;margin:0 auto;">
+                <a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44080202000085" style="display:inline-block;text-decoration:none;height:20px;line-height:20px;">
+                    <img src="~/IconSvg/备案图标.png" style="float:left;" /><p style="float:left;height:20px;line-height:20px;margin: 0px 0px 0px 5px; color:#939393;">粤公网安备 44080202000085号</p>
+                </a>
             </div>
-        </footer>*@
+            <div class="d-inline">
+                <a target="_blank" href="http://www.beian.miit.gov.cn/" style="display:inline-block;text-decoration:none;height:20px;line-height:20px;">
+                    <p style="float:left;height:20px;line-height:20px;margin: 0px 0px 0px 5px; color:#939393;">粤ICP备20015265号</p>
+                </a>
+            </div>
+        </div>
+    </footer>
     @RenderSection("scripts", required: false)
     <script>
         function AddCategory() {
             var categoryName = $("#CategoryName").val();
+            if (categoryName == "") {
+                //提示错误信息
+                $(".toast-body").text("提交内容有误，请重新确认！");
+                $(".toast").show();
+                $(".toast").toast('show');
+                return false;
+            }
             $.ajax({
                 url: "/Article/AddCategory/",
                 dataType: "json",
@@ -270,6 +287,7 @@
         }
 
         function Register() {
+            $("#btnRegister").attr("disabled","true");
             var email = $("#Email").val();
             var password = $("#Password").val();
             var confirmPassword = $("#ConfirmPassword").val();
@@ -292,6 +310,7 @@
                         $(".toast").show();
                         $(".toast").toast('show');
                     }
+                    $("#btnRegister").removeAttr("disabled");
                 }
             })
         }
@@ -320,7 +339,7 @@
             })
         }
 
-        function ChangeSearchType(btn,value) {
+        function ChangeSearchType(btn, value) {
             if (!$(btn).hasClass("active")) {
                 $(btn).addClass("active");
                 $(btn).siblings("a").removeClass("active");
@@ -339,7 +358,7 @@
         $(function () {
             $(".toast").hide();
 
-             // 解决bootstrap下拉菜单第一次点击无反应问题
+            // 解决bootstrap下拉菜单第一次点击无反应问题
             $('.dropdown-toggle').dropdown();
         })
 

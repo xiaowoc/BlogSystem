@@ -59,7 +59,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-                    <button type="button" onclick="EditArticle()" class="btn btn-success" data-dismiss="modal">提交</button>
+                    <button type="button" id="btnEditArticle" onclick="EditArticle()" class="btn btn-success" data-dismiss="modal">提交</button>
                 </div>
             </div>
         </div>
@@ -152,6 +152,18 @@
         }
 
         function EditArticle() {
+            var title = $("#Title").val();
+            var content = $(".editormd-markdown-textarea").val();
+            var introContent = $("#IntroContent").val();
+            var articleId = '@articleDto.Id';
+            if (title == "" || content == "") {
+                $(".toast-body").text("提交内容不完整，请重新确认！");
+                $(".toast").show();
+                $(".toast").toast('show');
+                return false;
+            }
+            //禁用提交按钮，防止重复提交
+            $("#btnEditArticle").attr("disabled","true");
             //创建一个数组
             var categoryIds = new Array();
             //获取所有选中的分类
@@ -164,10 +176,6 @@
                     categoryIds.push($(this).val());
                 });
             }
-            var title = $("#Title").val();
-            var content = $(".editormd-markdown-textarea").val();
-            var introContent = $("#IntroContent").val();
-            var articleId = '@articleDto.Id';
             $.ajax({
                 url: "/Article/EditArticle",
                 type: "post",
@@ -183,6 +191,8 @@
                         $(".toast").show();
                         $(".toast").toast('show');
                     }
+                     //解禁提交按钮
+                    $("#btnEditArticle").removeAttr("disabled");
                 }
             })
         }

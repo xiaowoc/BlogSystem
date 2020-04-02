@@ -14,7 +14,7 @@ using System.Web.Mvc;
 
 namespace BlogSystem.MVCSite.Controllers
 {
-    [ControllerAllowOrigin(AllowSites = new string[] { "http://localhost:53725", "http://localhost:12178", "http://localhost:8080" })]
+    [ControllerAllowOrigin(AllowSites = new string[] { "http://vue.xiaowoc.cn" })]
     public class ArticleController : Controller
     {
         //[HttpGet]
@@ -761,6 +761,11 @@ namespace BlogSystem.MVCSite.Controllers
             return Json(new { status = "ok", goodCount = data.GoodCount, badCount = data.BadCount });
         }
 
+        /// <summary>
+        /// 获取文章的喜欢和不喜欢数量（需要登陆，因为要对已经点击过进行ui限制）
+        /// </summary>
+        /// <param name="id">文章id</param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult> GetLikeHate(Guid id)
         {
